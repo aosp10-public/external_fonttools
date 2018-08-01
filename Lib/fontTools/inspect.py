@@ -8,11 +8,16 @@
 from __future__ import print_function, division, absolute_import
 from fontTools.misc.py23 import *
 from fontTools import misc, ttLib, cffLib
-import pygtk
-pygtk.require('2.0')
+try:
+    from gi import pygtkcompat
+except ImportError:
+    pygtkcompat = None
+
+if pygtkcompat is not None:
+    pygtkcompat.enable()
+    pygtkcompat.enable_gtk(version='3.0')
 import gtk
 import sys
-
 
 
 class Row(object):
@@ -74,7 +79,7 @@ class Row(object):
 	def _add_object(self, key, value):
 		# Make sure item is decompiled
 		try:
-			value["asdf"]
+			value.asdf # Any better way?!
 		except (AttributeError, KeyError, TypeError, ttLib.TTLibError):
 			pass
 		if isinstance(value, ttLib.getTableModule('glyf').Glyph):
@@ -110,8 +115,7 @@ class Row(object):
 		if len(value) and len(value) <= 32:
 			self._value_str = str(value)
 		else:
-			self._value_str = '%s of %d items' % (value.__class__.__name__,
-							      len(value))
+			self._value_str = '%s of %d items' % (value.__class__.__name__, len(value))
 		self._items = list(enumerate(value))
 
 	def __len__(self):
@@ -253,13 +257,15 @@ class Inspect(object):
 		self.scrolled_window.add(self.treeview)
 		self.window.show_all()
 
-def main(args):
+def main(args=None):
+	if args is None:
+		args = sys.argv[1:]
 	if len(args) < 1:
 		print("usage: pyftinspect font...", file=sys.stderr)
-		sys.exit(1)
+		return 1
 	for arg in args:
 		Inspect(arg)
 	gtk.main()
 
 if __name__ == "__main__":
-	main(sys.argv[1:])
+	sys.exit(main())
