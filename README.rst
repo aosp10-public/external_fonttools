@@ -8,7 +8,7 @@ What is this?
   project includes the TTX tool, that can convert TrueType and OpenType
   fonts to and from an XML text format, which is also called TTX. It
   supports TrueType, OpenType, AFM and to an extent Type 1 and some
-  Mac-specific formats. The project has a `MIT open-source
+  Mac-specific formats. The project has an `MIT open-source
   licence <LICENSE>`__.
 | Among other things this means you can use it free of charge.
 
@@ -26,7 +26,7 @@ install it with `pip <https://pip.pypa.io>`__:
     pip install fonttools
 
 If you would like to contribute to its development, you can clone the
-repository from Github, install the package in 'editable' mode and
+repository from GitHub, install the package in 'editable' mode and
 modify the source code in place. We recommend creating a virtual
 environment, using `virtualenv <https://virtualenv.pypa.io>`__ or
 Python 3 `venv <https://docs.python.org/3/library/venv.html>`__ module.
@@ -40,7 +40,7 @@ Python 3 `venv <https://docs.python.org/3/library/venv.html>`__ module.
     # create new virtual environment called e.g. 'fonttools-venv', or anything you like
     python -m virtualenv fonttools-venv
 
-    # source the `activate` shell script to enter the environment (Un\*x); to exit, just type `deactivate`
+    # source the `activate` shell script to enter the environment (Un*x); to exit, just type `deactivate`
     . fonttools-venv/bin/activate
 
     # to activate the virtual environment in Windows `cmd.exe`, do
@@ -53,7 +53,7 @@ TTX – From OpenType and TrueType to XML and Back
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once installed you can use the ``ttx`` command to convert binary font
-files (``.otf``, ``.ttf``, etc) to the TTX xml format, edit them, and
+files (``.otf``, ``.ttf``, etc) to the TTX XML format, edit them, and
 convert them back to binary format. TTX files have a .ttx file
 extension.
 
@@ -62,11 +62,11 @@ extension.
     ttx /path/to/font.otf
     ttx /path/to/font.ttx
 
-The TTX application works can be used in two ways, depending on what
+The TTX application can be used in two ways, depending on what
 platform you run it on:
 
--  As a command line tool (Windows/DOS, Unix, MacOSX)
--  By dropping files onto the application (Windows, MacOS)
+-  As a command line tool (Windows/DOS, Unix, macOS)
+-  By dropping files onto the application (Windows, macOS)
 
 TTX detects what kind of files it is fed: it will output a ``.ttx`` file
 when it sees a ``.ttf`` or ``.otf``, and it will compile a ``.ttf`` or
@@ -77,8 +77,8 @@ same name as the input file but with a different extension. TTX will
 number to the output filename (before the extension) such as
 ``Arial#1.ttf``
 
-When using TTX from the command line there are a bunch of extra options,
-these are explained in the help text, as displayed when typing
+When using TTX from the command line there are a bunch of extra options.
+These are explained in the help text, as displayed when typing
 ``ttx -h`` at the command prompt. These additional options include:
 
 -  specifying the folder where the output files are created
@@ -142,7 +142,7 @@ available:
 fontTools Python Module
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The fontTools python module provides a convenient way to
+The fontTools Python module provides a convenient way to
 programmatically edit font files.
 
 .. code:: py
@@ -153,7 +153,7 @@ programmatically edit font files.
     <fontTools.ttLib.TTFont object at 0x10c34ed50>
     >>>
 
-A selection of sample python programs is in the
+A selection of sample Python programs is in the
 `Snippets <https://github.com/fonttools/fonttools/blob/master/Snippets/>`__
 directory.
 
@@ -164,105 +164,143 @@ The ``fontTools`` package currently has no (required) external dependencies
 besides the modules included in the Python Standard Library.
 However, a few extra dependencies are required by some of its modules, which
 are needed to unlock optional features.
+The ``fonttools`` PyPI distribution also supports so-called "extras", i.e. a
+set of keywords that describe a group of additional dependencies, which can be
+used when installing via pip, or when specifying a requirement.
+For example:
 
--  ``Lib/fontTools/ttLib/woff2.py``
+.. code:: sh
 
-   Module to compress/decompress WOFF 2.0 web fonts; it requires:
+    pip install fonttools[ufo,lxml,woff,unicode]
 
-   -  `brotli <https://pypi.python.org/pypi/Brotli>`__: Python bindings of
-      the Brotli compression library.
+This command will install fonttools, as well as the optional dependencies that
+are required to unlock the extra features named "ufo", etc.
 
--  ``Lib/fontTools/ttLib/sfnt.py``
+- ``Lib/fontTools/misc/etree.py``
 
-   To better compress WOFF 1.0 web fonts, the following module can be used
-   instead of the built-in ``zlib`` library:
+  The module exports a ElementTree-like API for reading/writing XML files, and
+  allows to use as the backend either the built-in ``xml.etree`` module or
+  `lxml <https://http://lxml.de>`__. The latter is preferred whenever present,
+  as it is generally faster and more secure.
 
-   -  `zopfli <https://pypi.python.org/pypi/zopfli>`__: Python bindings of
-      the Zopfli compression library.
+  *Extra:* ``lxml``
 
--  ``Lib/fontTools/unicode.py``
+- ``Lib/fontTools/ufoLib``
 
-   To display the Unicode character names when dumping the ``cmap`` table
-   with ``ttx`` we use the ``unicodedata`` module in the Standard Library.
-   The version included in there varies between different Python versions.
-   To use the latest available data, you can install:
+  Package for reading and writing UFO source files; it requires:
 
-   -  `unicodedata2 <https://pypi.python.org/pypi/unicodedata2>`__:
-      ``unicodedata`` backport for Python 2.7 and 3.5 updated to the latest
-      Unicode version 9.0. Note this is not necessary if you use Python 3.6
-      as the latter already comes with an up-to-date ``unicodedata``.
+  * `fs <https://pypi.org/pypi/fs>`__: (aka ``pyfilesystem2``) filesystem
+    abstraction layer.
 
--  ``Lib/fontTools/varLib/interpolatable.py``
+  * `enum34 <https://pypi.org/pypi/enum34>`__: backport for the built-in ``enum``
+    module (only required on Python < 3.4).
 
-   Module for finding wrong contour/component order between different masters.
-   It requires one of the following packages in order to solve the so-called
-   "minimum weight perfect matching problem in bipartite graphs", or
-   the Assignment problem:
+  *Extra:* ``ufo``
 
-   *  `scipy <https://pypi.python.org/pypi/scipy>`__: the Scientific Library
-      for Python, which internally uses `NumPy <https://pypi.python.org/pypi/numpy>`__
-      arrays and hence is very fast;
-   *  `munkres <https://pypi.python.org/pypi/munkres>`__: a pure-Python
-      module that implements the Hungarian or Kuhn-Munkres algorithm.
+- ``Lib/fontTools/ttLib/woff2.py``
 
--  ``Lib/fontTools/misc/symfont.py``
+  Module to compress/decompress WOFF 2.0 web fonts; it requires:
 
-   Advanced module for symbolic font statistics analysis; it requires:
+  * `brotli <https://pypi.python.org/pypi/Brotli>`__: Python bindings of
+    the Brotli compression library.
 
-   *  `sympy <https://pypi.python.org/pypi/sympy>`__: the Python library for
-      symbolic mathematics.
+  *Extra:* ``woff``
 
--  ``Lib/fontTools/t1Lib.py``
+- ``Lib/fontTools/ttLib/sfnt.py``
 
-   To get the file creator and type of Macintosh PostScript Type 1 fonts
-   on Python 3 you need to install the following module, as the old ``MacOS``
-   module is no longer included in Mac Python:
+  To better compress WOFF 1.0 web fonts, the following module can be used
+  instead of the built-in ``zlib`` library:
 
-   *  `xattr <https://pypi.python.org/pypi/xattr>`__: Python wrapper for
-      extended filesystem attributes (macOS platform only).
+  * `zopfli <https://pypi.python.org/pypi/zopfli>`__: Python bindings of
+    the Zopfli compression library.
 
--  ``Lib/fontTools/pens/cocoaPen.py``
+  *Extra:* ``woff``
 
-   Pen for drawing glyphs with Cocoa ``NSBezierPath``, requires:
+- ``Lib/fontTools/unicode.py``
 
-   *  `PyObjC <https://pypi.python.org/pypi/pyobjc>`__: the bridge between
-      Python and the Objective-C runtime (macOS platform only).
+  To display the Unicode character names when dumping the ``cmap`` table
+  with ``ttx`` we use the ``unicodedata`` module in the Standard Library.
+  The version included in there varies between different Python versions.
+  To use the latest available data, you can install:
 
--  ``Lib/fontTools/pens/qtPen.py``
+  * `unicodedata2 <https://pypi.python.org/pypi/unicodedata2>`__:
+    ``unicodedata`` backport for Python 2.7 and 3.5 updated to the latest
+    Unicode version 9.0. Note this is not necessary if you use Python 3.6
+    as the latter already comes with an up-to-date ``unicodedata``.
 
-   Pen for drawing glyphs with Qt's ``QPainterPath``, requires:
+  *Extra:* ``unicode``
 
-   *  `PyQt5 <https://pypi.python.org/pypi/PyQt5>`__: Python bindings for
-      the Qt cross platform UI and application toolkit.
+- ``Lib/fontTools/varLib/interpolatable.py``
 
--  ``Lib/fontTools/pens/reportLabPen.py``
+  Module for finding wrong contour/component order between different masters.
+  It requires one of the following packages in order to solve the so-called
+  "minimum weight perfect matching problem in bipartite graphs", or
+  the Assignment problem:
 
-   Pen to drawing glyphs as PNG images, requires:
+  * `scipy <https://pypi.python.org/pypi/scipy>`__: the Scientific Library
+    for Python, which internally uses `NumPy <https://pypi.python.org/pypi/numpy>`__
+    arrays and hence is very fast;
+  * `munkres <https://pypi.python.org/pypi/munkres>`__: a pure-Python
+    module that implements the Hungarian or Kuhn-Munkres algorithm.
 
-   *  `reportlab <https://pypi.python.org/pypi/reportlab>`__: Python toolkit
-      for generating PDFs and graphics.
+  *Extra:* ``interpolatable``
 
--  ``Lib/fontTools/inspect.py``
+- ``Lib/fontTools/misc/symfont.py``
 
-   A GUI font inspector, requires one of the following packages:
+  Advanced module for symbolic font statistics analysis; it requires:
 
-   *  `PyGTK <https://pypi.python.org/pypi/PyGTK>`__: Python bindings for
-      GTK  2.x (only works with Python 2).
-   *  `PyGObject <https://wiki.gnome.org/action/show/Projects/PyGObject>`__ :
-      Python bindings for GTK 3.x and gobject-introspection libraries (also
-      compatible with Python 3).
+  * `sympy <https://pypi.python.org/pypi/sympy>`__: the Python library for
+    symbolic mathematics.
+
+  *Extra:* ``symfont``
+
+- ``Lib/fontTools/t1Lib.py``
+
+  To get the file creator and type of Macintosh PostScript Type 1 fonts
+  on Python 3 you need to install the following module, as the old ``MacOS``
+  module is no longer included in Mac Python:
+
+  * `xattr <https://pypi.python.org/pypi/xattr>`__: Python wrapper for
+    extended filesystem attributes (macOS platform only).
+
+  *Extra:* ``type1``
+
+- ``Lib/fontTools/pens/cocoaPen.py``
+
+  Pen for drawing glyphs with Cocoa ``NSBezierPath``, requires:
+
+  * `PyObjC <https://pypi.python.org/pypi/pyobjc>`__: the bridge between
+    Python and the Objective-C runtime (macOS platform only).
+
+- ``Lib/fontTools/pens/qtPen.py``
+
+  Pen for drawing glyphs with Qt's ``QPainterPath``, requires:
+
+  * `PyQt5 <https://pypi.python.org/pypi/PyQt5>`__: Python bindings for
+    the Qt cross platform UI and application toolkit.
+
+- ``Lib/fontTools/pens/reportLabPen.py``
+
+  Pen to drawing glyphs as PNG images, requires:
+
+  * `reportlab <https://pypi.python.org/pypi/reportlab>`__: Python toolkit
+    for generating PDFs and graphics.
+
+- ``Lib/fontTools/inspect.py``
+
+  A GUI font inspector, requires one of the following packages:
+
+  * `PyGTK <https://pypi.python.org/pypi/PyGTK>`__: Python bindings for
+    GTK  2.x (only works with Python 2).
+  * `PyGObject <https://wiki.gnome.org/action/show/Projects/PyGObject>`__ :
+    Python bindings for GTK 3.x and gobject-introspection libraries (also
+    compatible with Python 3).
 
 Testing
 ~~~~~~~
 
-To run the test suite, you can do:
-
-.. code:: sh
-
-    python setup.py test
-
-If you have `pytest <http://docs.pytest.org/en/latest/>`__, you can run
-the ``pytest`` command directly. The tests will run against the
+To run the test suite, you need to install `pytest <http://docs.pytest.org/en/latest/>`__.
+When you run the ``pytest`` command, the tests will run against the
 installed ``fontTools`` package, or the first one found in the
 ``PYTHONPATH``.
 
@@ -277,15 +315,15 @@ environments.
 
 Note that when you run ``tox`` without arguments, the tests are executed
 for all the environments listed in tox.ini's ``envlist``. In our case,
-this includes Python 2.7 and 3.6, so for this to work the ``python2.7``
-and ``python3.6`` executables must be available in your ``PATH``.
+this includes Python 2.7 and 3.7, so for this to work the ``python2.7``
+and ``python3.7`` executables must be available in your ``PATH``.
 
 You can specify an alternative environment list via the ``-e`` option,
 or the ``TOXENV`` environment variable:
 
 .. code:: sh
 
-    tox -e py27-nocov
+    tox -e py27
     TOXENV="py36-cov,htmlcov" tox
 
 Development Community

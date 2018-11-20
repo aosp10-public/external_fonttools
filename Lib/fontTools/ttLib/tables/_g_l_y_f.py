@@ -260,8 +260,11 @@ flagYShort = 0x04
 flagRepeat = 0x08
 flagXsame =  0x10
 flagYsame = 0x20
-flagReserved1 = 0x40
-flagReserved2 = 0x80
+flagOverlapSimple = 0x40
+flagReserved = 0x80
+
+# These flags are kept for XML output after decompiling the coordinates
+keepFlags = flagOnCurve + flagOverlapSimple
 
 _flagSignBytes = {
 	0: 2,
@@ -408,10 +411,15 @@ class Glyph(object):
 				writer.begintag("contour")
 				writer.newline()
 				for j in range(last, self.endPtsOfContours[i] + 1):
-					writer.simpletag("pt", [
+					attrs = [
 							("x", self.coordinates[j][0]),
 							("y", self.coordinates[j][1]),
-							("on", self.flags[j] & flagOnCurve)])
+							("on", self.flags[j] & flagOnCurve),
+						]
+					if self.flags[j] & flagOverlapSimple:
+						# Apple's rasterizer uses flagOverlapSimple in the first contour/first pt to flag glyphs that contain overlapping contours
+						attrs.append(("overlap", 1))
+					writer.simpletag("pt", attrs)
 					writer.newline()
 				last = self.endPtsOfContours[i] + 1
 				writer.endtag("contour")
@@ -441,7 +449,10 @@ class Glyph(object):
 				if name != "pt":
 					continue  # ignore anything but "pt"
 				coordinates.append((safeEval(attrs["x"]), safeEval(attrs["y"])))
-				flags.append(not not safeEval(attrs["on"]))
+				flag = not not safeEval(attrs["on"])
+				if "overlap" in attrs and bool(safeEval(attrs["overlap"])):
+					flag |= flagOverlapSimple
+				flags.append(flag)
 			flags = array.array("B", flags)
 			if not hasattr(self, "coordinates"):
 				self.coordinates = coordinates
@@ -512,8 +523,7 @@ class Glyph(object):
 	def decompileCoordinates(self, data):
 		endPtsOfContours = array.array("h")
 		endPtsOfContours.fromstring(data[:2*self.numberOfContours])
-		if sys.byteorder != "big":
-			endPtsOfContours.byteswap()
+		if sys.byteorder != "big": endPtsOfContours.byteswap()
 		self.endPtsOfContours = endPtsOfContours.tolist()
 
 		data = data[2*self.numberOfContours:]
@@ -561,8 +571,8 @@ class Glyph(object):
 		assert xIndex == len(xCoordinates)
 		assert yIndex == len(yCoordinates)
 		coordinates.relativeToAbsolute()
-		# discard all flags but for "flagOnCurve"
-		self.flags = array.array("B", (f & flagOnCurve for f in flags))
+		# discard all flags except "keepFlags"
+		self.flags = array.array("B", (f & keepFlags for f in flags))
 
 	def decompileCoordinatesRaw(self, nCoordinates, data):
 		# unpack flags and prepare unpacking of coordinates
@@ -625,8 +635,7 @@ class Glyph(object):
 		assert len(self.coordinates) == len(self.flags)
 		data = []
 		endPtsOfContours = array.array("h", self.endPtsOfContours)
-		if sys.byteorder != "big":
-			endPtsOfContours.byteswap()
+		if sys.byteorder != "big": endPtsOfContours.byteswap()
 		data.append(endPtsOfContours.tostring())
 		instructions = self.program.getBytecode()
 		data.append(struct.pack(">h", len(instructions)))
@@ -1027,6 +1036,39 @@ class Glyph(object):
 					contour = contour[nextOnCurve:]
 					cFlags = cFlags[nextOnCurve:]
 			pen.closePath()
+
+	def drawPoints(self, pen, glyfTable, offset=0):
+		"""Draw the glyph using the supplied pointPen. Opposed to Glyph.draw(),
+		this will not change the point indices.
+		"""
+
+		if self.isComposite():
+			for component in self.components:
+				glyphName, transform = component.getComponentInfo()
+				pen.addComponent(glyphName, transform)
+			return
+
+		coordinates, endPts, flags = self.getCoordinates(glyfTable)
+		if offset:
+			coordinates = coordinates.copy()
+			coordinates.translate((offset, 0))
+		start = 0
+		for end in endPts:
+			end = end + 1
+			contour = coordinates[start:end]
+			cFlags = flags[start:end]
+			start = end
+			pen.beginPath()
+			# Start with the appropriate segment type based on the final segment
+			segmentType = "line" if cFlags[-1] == 1 else "qcurve"
+			for i, pt in enumerate(contour):
+				if cFlags[i] == 1:
+					pen.addPoint(pt, segmentType=segmentType)
+					segmentType = "line"
+				else:
+					pen.addPoint(pt)
+					segmentType = "qcurve"
+			pen.endPath()
 
 	def __eq__(self, other):
 		if type(self) != type(other):

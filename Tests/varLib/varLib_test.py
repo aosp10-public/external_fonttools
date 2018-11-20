@@ -3,6 +3,7 @@ from fontTools.misc.py23 import *
 from fontTools.ttLib import TTFont
 from fontTools.varLib import build
 from fontTools.varLib import main as varLib_main
+from fontTools.designspaceLib import DesignSpaceDocumentError
 import difflib
 import os
 import shutil
@@ -94,7 +95,7 @@ class BuildTest(unittest.TestCase):
         return font, savepath
 
     def _run_varlib_build_test(self, designspace_name, font_name, tables,
-                               expected_ttx_name):
+                               expected_ttx_name, save_before_dump=False):
         suffix = '.ttf'
         ds_path = self.get_test_input(designspace_name + '.designspace')
         ufo_dir = self.get_test_input('master_ufo')
@@ -107,6 +108,15 @@ class BuildTest(unittest.TestCase):
 
         finder = lambda s: s.replace(ufo_dir, self.tempdir).replace('.ufo', suffix)
         varfont, model, _ = build(ds_path, finder)
+
+        if save_before_dump:
+            # some data (e.g. counts printed in TTX inline comments) is only
+            # calculated at compile time, so before we can compare the TTX
+            # dumps we need to save to a temporary stream, and realod the font
+            buf = BytesIO()
+            varfont.save(buf)
+            buf.seek(0)
+            varfont = TTFont(buf)
 
         expected_ttx_path = self.get_test_output(expected_ttx_name + '.ttx')
         self.expect_ttx(varfont, expected_ttx_path, tables)
@@ -126,12 +136,9 @@ class BuildTest(unittest.TestCase):
 
     def test_varlib_build_no_axes_ttf(self):
         """Designspace file does not contain an <axes> element."""
-        self._run_varlib_build_test(
-            designspace_name='InterpolateLayout3',
-            font_name='TestFamily2',
-            tables=['GDEF', 'HVAR', 'MVAR', 'fvar', 'gvar'],
-            expected_ttx_name='Build3'
-        )
+        ds_path = self.get_test_input('InterpolateLayout3.designspace')
+        with self.assertRaisesRegex(DesignSpaceDocumentError, "No axes defined"):
+            build(ds_path)
 
     def test_varlib_avar_single_axis(self):
         """Designspace file contains a 'weight' axis with <map> elements
@@ -183,6 +190,18 @@ class BuildTest(unittest.TestCase):
             font_name='TestFamily3',
             tables=['avar'],
             expected_ttx_name=test_name
+        )
+
+    def test_varlib_build_feature_variations(self):
+        """Designspace file contains <rules> element, used to build
+        GSUB FeatureVariations table.
+        """
+        self._run_varlib_build_test(
+            designspace_name="FeatureVars",
+            font_name="TestFamily",
+            tables=["fvar", "GSUB"],
+            expected_ttx_name="FeatureVars",
+            save_before_dump=True,
         )
 
     def test_varlib_main_ttf(self):
