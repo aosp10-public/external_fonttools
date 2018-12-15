@@ -59,6 +59,7 @@ class Builder(object):
         self.lookupflag_ = 0
         self.lookupflag_markFilterSet_ = None
         self.language_systems = set()
+        self.seen_non_DFLT_script_ = False
         self.named_lookups_ = {}
         self.cur_lookup_ = None
         self.cur_lookup_name_ = None
@@ -289,10 +290,14 @@ class Builder(object):
             else:
                 params.SubfamilyNameID = 0
         elif tag in self.featureNames_:
-            assert tag in self.featureNames_ids_
-            params = otTables.FeatureParamsStylisticSet()
-            params.Version = 0
-            params.UINameID = self.featureNames_ids_[tag]
+            if not self.featureNames_ids_:
+                # name table wasn't selected among the tables to build; skip
+                pass
+            else:
+                assert tag in self.featureNames_ids_
+                params = otTables.FeatureParamsStylisticSet()
+                params.Version = 0
+                params.UINameID = self.featureNames_ids_[tag]
         elif tag in self.cv_parameters_:
             params = otTables.FeatureParamsCharacterVariants()
             params.Format = 0
@@ -616,6 +621,15 @@ class Builder(object):
             raise FeatureLibError(
                 'If "languagesystem DFLT dflt" is present, it must be '
                 'the first of the languagesystem statements', location)
+        if script == "DFLT":
+            if self.seen_non_DFLT_script_:
+                raise FeatureLibError(
+                    'languagesystems using the "DFLT" script tag must '
+                    "precede all other languagesystems",
+                    location
+                )
+        else:
+            self.seen_non_DFLT_script_ = True
         if (script, language) in self.default_language_systems_:
             raise FeatureLibError(
                 '"languagesystem %s %s" has already been specified' %
@@ -688,31 +702,15 @@ class Builder(object):
             raise FeatureLibError(
                 "Language statements are not allowed "
                 "within \"feature %s\"" % self.cur_feature_name_, location)
-        if language != 'dflt' and self.script_ == 'DFLT':
-            raise FeatureLibError("Need non-DFLT script when using non-dflt "
-                                  "language (was: \"%s\")" % language, location)
         self.cur_lookup_ = None
 
         key = (self.script_, language, self.cur_feature_name_)
-        if not include_default:
-            # don't include any lookups added by script DFLT in this feature
-            self.features_[key] = []
-        elif language != 'dflt':
-            # add rules defined between script statement and its first following
-            # language statement to each of its explicitly specified languages:
-            # http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html#4.b.ii
-            lookups = self.features_.get((key[0], 'dflt', key[2]))
-            dflt_lookups = self.features_.get(('DFLT', 'dflt', key[2]), [])
-            if lookups:
-                if key[:2] in self.get_default_language_systems_():
-                    lookups = [l for l in lookups if l not in dflt_lookups]
-                self.features_.setdefault(key, []).extend(lookups)
-        if self.script_ == 'DFLT':
-            langsys = set(self.get_default_language_systems_())
+        lookups = self.features_.get((key[0], 'dflt', key[2]))
+        if (language == 'dflt' or include_default) and lookups:
+            self.features_[key] = lookups[:]
         else:
-            langsys = set()
-        langsys.add((self.script_, language))
-        self.language_systems = frozenset(langsys)
+            self.features_[key] = []
+        self.language_systems = frozenset([(self.script_, language)])
 
         if required:
             key = (self.script_, language)
@@ -996,6 +994,16 @@ class Builder(object):
                            glyphclass2, value2):
         lookup = self.get_lookup_(location, PairPosBuilder)
         lookup.addClassPair(location, glyphclass1, value1, glyphclass2, value2)
+
+    def add_subtable_break(self, location):
+        if type(self.cur_lookup_) is not PairPosBuilder:
+            raise FeatureLibError(
+                'explicit "subtable" statement is intended for use with only '
+                "Pair Adjustment Positioning Format 2 (i.e. pair class kerning)",
+                location
+            )
+        lookup = self.get_lookup_(location, PairPosBuilder)
+        lookup.add_subtable_break(location)
 
     def add_specific_pair_pos(self, location, glyph1, value1, glyph2, value2):
         lookup = self.get_lookup_(location, PairPosBuilder)
@@ -1486,7 +1494,10 @@ class ClassPairPosSubtableBuilder(object):
             return
         st = otl.buildPairPosClassesSubtable(self.values_,
                                              self.builder_.glyphMap)
+        if st.Coverage is None:
+            return
         self.subtables_.append(st)
+        self.forceSubtableBreak_ = False
 
 
 class PairPosBuilder(LookupBuilder):
@@ -1506,10 +1517,9 @@ class PairPosBuilder(LookupBuilder):
         oldValue = self.glyphPairs.get(key, None)
         if oldValue is not None:
             # the Feature File spec explicitly allows specific pairs generated
-            # by an 'enum' rule to be overridden by preceding single pairs;
-            # we emit a warning and use the previously defined value
+            # by an 'enum' rule to be overridden by preceding single pairs
             otherLoc = self.locations[key]
-            log.warning(
+            log.debug(
                 'Already defined position for pair %s %s at %s:%d:%d; '
                 'choosing the first value',
                 glyph1, glyph2, otherLoc[0], otherLoc[1], otherLoc[2])

@@ -87,7 +87,13 @@ class BaseTTXConverter(DefaultTable):
 					from .otTables import fixSubTableOverFlows
 					ok = fixSubTableOverFlows(font, overflowRecord)
 				if not ok:
-					raise
+					# Try upgrading lookup to Extension and hope
+					# that cross-lookup sharing not happening would
+					# fix overflow...
+					from .otTables import fixLookupOverFlows
+					ok = fixLookupOverFlows(font, overflowRecord)
+					if not ok:
+						raise
 
 	def toXML(self, writer, font):
 		self.table.toXML2(writer, font)
@@ -139,8 +145,7 @@ class OTTableReader(object):
 		pos = self.pos
 		newpos = pos + count * 2
 		value = array.array("H", self.data[pos:newpos])
-		if sys.byteorder != "big":
-			value.byteswap()
+		if sys.byteorder != "big": value.byteswap()
 		self.pos = newpos
 		return value
 
@@ -331,7 +336,6 @@ class OTTableWriter(object):
 		iRange.reverse()
 
 		isExtension = hasattr(self, "Extension")
-		dontShare = hasattr(self, 'DontShare')
 
 		selfTables = tables
 

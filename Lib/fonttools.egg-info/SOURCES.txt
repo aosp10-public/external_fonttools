@@ -16,7 +16,6 @@ setup.cfg
 setup.py
 tox.ini
 .travis/after_success.sh
-.travis/before_deploy.sh
 .travis/before_install.sh
 .travis/install.sh
 .travis/run.sh
@@ -72,6 +71,11 @@ Doc/source/ttLib/macUtils.rst
 Doc/source/ttLib/sfnt.rst
 Doc/source/ttLib/tables.rst
 Doc/source/ttLib/woff2.rst
+Doc/source/ufoLib/converters.rst
+Doc/source/ufoLib/filenames.rst
+Doc/source/ufoLib/glifLib.rst
+Doc/source/ufoLib/pointPen.rst
+Doc/source/ufoLib/ufoLib.rst
 Doc/source/varLib/designspace.rst
 Doc/source/varLib/index.rst
 Doc/source/varLib/interpolatable.rst
@@ -109,11 +113,13 @@ Lib/fontTools/misc/classifyTools.py
 Lib/fontTools/misc/cliTools.py
 Lib/fontTools/misc/eexec.py
 Lib/fontTools/misc/encodingTools.py
+Lib/fontTools/misc/etree.py
 Lib/fontTools/misc/filenames.py
 Lib/fontTools/misc/fixedTools.py
 Lib/fontTools/misc/loggingTools.py
 Lib/fontTools/misc/macCreatorType.py
 Lib/fontTools/misc/macRes.py
+Lib/fontTools/misc/plistlib.py
 Lib/fontTools/misc/psCharStrings.py
 Lib/fontTools/misc/psLib.py
 Lib/fontTools/misc/psOperators.py
@@ -139,6 +145,7 @@ Lib/fontTools/pens/filterPen.py
 Lib/fontTools/pens/momentsPen.py
 Lib/fontTools/pens/perimeterPen.py
 Lib/fontTools/pens/pointInsidePen.py
+Lib/fontTools/pens/pointPen.py
 Lib/fontTools/pens/qtPen.py
 Lib/fontTools/pens/recordingPen.py
 Lib/fontTools/pens/reportLabPen.py
@@ -197,6 +204,7 @@ Lib/fontTools/ttLib/tables/S_V_G_.py
 Lib/fontTools/ttLib/tables/S__i_l_f.py
 Lib/fontTools/ttLib/tables/S__i_l_l.py
 Lib/fontTools/ttLib/tables/T_S_I_B_.py
+Lib/fontTools/ttLib/tables/T_S_I_C_.py
 Lib/fontTools/ttLib/tables/T_S_I_D_.py
 Lib/fontTools/ttLib/tables/T_S_I_J_.py
 Lib/fontTools/ttLib/tables/T_S_I_P_.py
@@ -258,6 +266,17 @@ Lib/fontTools/ttLib/tables/sbixGlyph.py
 Lib/fontTools/ttLib/tables/sbixStrike.py
 Lib/fontTools/ttLib/tables/table_API_readme.txt
 Lib/fontTools/ttLib/tables/ttProgram.py
+Lib/fontTools/ufoLib/__init__.py
+Lib/fontTools/ufoLib/converters.py
+Lib/fontTools/ufoLib/errors.py
+Lib/fontTools/ufoLib/etree.py
+Lib/fontTools/ufoLib/filenames.py
+Lib/fontTools/ufoLib/glifLib.py
+Lib/fontTools/ufoLib/kerning.py
+Lib/fontTools/ufoLib/plistlib.py
+Lib/fontTools/ufoLib/pointPen.py
+Lib/fontTools/ufoLib/utils.py
+Lib/fontTools/ufoLib/validators.py
 Lib/fontTools/unicodedata/Blocks.py
 Lib/fontTools/unicodedata/OTTags.py
 Lib/fontTools/unicodedata/ScriptExtensions.py
@@ -266,7 +285,6 @@ Lib/fontTools/unicodedata/__init__.py
 Lib/fontTools/varLib/__init__.py
 Lib/fontTools/varLib/__main__.py
 Lib/fontTools/varLib/builder.py
-Lib/fontTools/varLib/designspace.py
 Lib/fontTools/varLib/featureVars.py
 Lib/fontTools/varLib/interpolatable.py
 Lib/fontTools/varLib/interpolate_layout.py
@@ -286,6 +304,7 @@ Lib/fonttools.egg-info/PKG-INFO
 Lib/fonttools.egg-info/SOURCES.txt
 Lib/fonttools.egg-info/dependency_links.txt
 Lib/fonttools.egg-info/entry_points.txt
+Lib/fonttools.egg-info/requires.txt
 Lib/fonttools.egg-info/top_level.txt
 MetaTools/buildTableList.py
 MetaTools/buildUCD.py
@@ -371,6 +390,8 @@ Tests/feaLib/data/ZeroValue_SinglePos_vertical.fea
 Tests/feaLib/data/ZeroValue_SinglePos_vertical.ttx
 Tests/feaLib/data/baseClass.fea
 Tests/feaLib/data/baseClass.feax
+Tests/feaLib/data/bug1307.fea
+Tests/feaLib/data/bug1307.ttx
 Tests/feaLib/data/bug453.fea
 Tests/feaLib/data/bug453.ttx
 Tests/feaLib/data/bug457.fea
@@ -504,10 +525,12 @@ Tests/misc/bezierTools_test.py
 Tests/misc/classifyTools_test.py
 Tests/misc/eexec_test.py
 Tests/misc/encodingTools_test.py
+Tests/misc/etree_test.py
 Tests/misc/filenames_test.py
 Tests/misc/fixedTools_test.py
 Tests/misc/loggingTools_test.py
 Tests/misc/macRes_test.py
+Tests/misc/plistlib_test.py
 Tests/misc/psCharStrings_test.py
 Tests/misc/py23_test.py
 Tests/misc/testTools_test.py
@@ -516,6 +539,7 @@ Tests/misc/timeTools_test.py
 Tests/misc/transform_test.py
 Tests/misc/xmlReader_test.py
 Tests/misc/xmlWriter_test.py
+Tests/misc/testdata/test.plist
 Tests/mtiLib/mti_test.py
 Tests/mtiLib/data/featurename-backward.ttx.GSUB
 Tests/mtiLib/data/featurename-backward.txt
@@ -689,6 +713,11 @@ Tests/ttLib/tables/data/C_F_F_.bin
 Tests/ttLib/tables/data/C_F_F_.ttx
 Tests/ttLib/tables/data/C_F_F__2.bin
 Tests/ttLib/tables/data/C_F_F__2.ttx
+Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.glyf.bin
+Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.head.bin
+Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.loca.bin
+Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.maxp.bin
+Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.ttx
 Tests/ttLib/tables/data/_h_h_e_a_recalc_OTF.ttx
 Tests/ttLib/tables/data/_h_h_e_a_recalc_TTF.ttx
 Tests/ttLib/tables/data/_h_h_e_a_recalc_empty.ttx
@@ -1285,9 +1314,75 @@ Tests/ttx/data/TestTTF.ttf
 Tests/ttx/data/TestTTF.ttx
 Tests/ttx/data/TestWOFF.woff
 Tests/ttx/data/TestWOFF2.woff2
+Tests/ufoLib/GLIF1_test.py
+Tests/ufoLib/GLIF2_test.py
+Tests/ufoLib/UFO1_test.py
+Tests/ufoLib/UFO2_test.py
+Tests/ufoLib/UFO3_test.py
+Tests/ufoLib/UFOConversion_test.py
+Tests/ufoLib/UFOZ_test.py
+Tests/ufoLib/__init__.py
+Tests/ufoLib/filenames_test.py
+Tests/ufoLib/glifLib_test.py
+Tests/ufoLib/testSupport.py
+Tests/ufoLib/testdata/DemoFont.ufo/fontinfo.plist
+Tests/ufoLib/testdata/DemoFont.ufo/lib.plist
+Tests/ufoLib/testdata/DemoFont.ufo/metainfo.plist
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/A_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/B_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/F_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/F__A__B_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/G_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/O_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/R_.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/a.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/contents.plist
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/testglyph1.glif
+Tests/ufoLib/testdata/DemoFont.ufo/glyphs/testglyph1.reversed.glif
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/fontinfo.plist
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/groups.plist
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/kerning.plist
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/lib.plist
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/metainfo.plist
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/glyphs/A_.glif
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/glyphs/B_.glif
+Tests/ufoLib/testdata/TestFont1 (UFO1).ufo/glyphs/contents.plist
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/features.fea
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/fontinfo.plist
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/groups.plist
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/kerning.plist
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/lib.plist
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/metainfo.plist
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/glyphs/A_.glif
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/glyphs/B_.glif
+Tests/ufoLib/testdata/TestFont1 (UFO2).ufo/glyphs/contents.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/fontinfo.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/kerning.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/layercontents.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/lib.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/metainfo.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/data/com.github.fonttools.ttx/CUST.ttx
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/_notdef.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/a.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/b.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/c.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/contents.plist
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/d.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/e.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/f.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/g.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/h.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/i.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/j.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/k.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/l.glif
+Tests/ufoLib/testdata/TestFont1 (UFO3).ufo/glyphs/space.glif
+Tests/ufoLib/testdata/UFO3-Read Data.ufo/metainfo.plist
+Tests/ufoLib/testdata/UFO3-Read Data.ufo/data/org.unifiedfontobject.file.txt
+Tests/ufoLib/testdata/UFO3-Read Data.ufo/data/org.unifiedfontobject.directory/foo.txt
+Tests/ufoLib/testdata/UFO3-Read Data.ufo/data/org.unifiedfontobject.directory/bar/lol.txt
 Tests/varLib/__init__.py
 Tests/varLib/builder_test.py
-Tests/varLib/designspace_test.py
 Tests/varLib/interpolatable_test.py
 Tests/varLib/interpolate_layout_test.py
 Tests/varLib/models_test.py
@@ -1297,8 +1392,7 @@ Tests/varLib/data/Build.designspace
 Tests/varLib/data/BuildAvarEmptyAxis.designspace
 Tests/varLib/data/BuildAvarIdentityMaps.designspace
 Tests/varLib/data/BuildAvarSingleAxis.designspace
-Tests/varLib/data/Designspace.designspace
-Tests/varLib/data/Designspace2.designspace
+Tests/varLib/data/FeatureVars.designspace
 Tests/varLib/data/InterpolateLayout.designspace
 Tests/varLib/data/InterpolateLayout2.designspace
 Tests/varLib/data/InterpolateLayout3.designspace
@@ -1542,11 +1636,11 @@ Tests/varLib/data/master_ufo/TestFamily3-SemiBold.ufo/glyphs/o.glif
 Tests/varLib/data/master_ufo/TestFamily3-SemiBold.ufo/glyphs/s.glif
 Tests/varLib/data/master_ufo/TestFamily3-SemiBold.ufo/glyphs/t.glif
 Tests/varLib/data/test_results/Build.ttx
-Tests/varLib/data/test_results/Build3.ttx
 Tests/varLib/data/test_results/BuildAvarEmptyAxis.ttx
 Tests/varLib/data/test_results/BuildAvarIdentityMaps.ttx
 Tests/varLib/data/test_results/BuildAvarSingleAxis.ttx
 Tests/varLib/data/test_results/BuildMain.ttx
+Tests/varLib/data/test_results/FeatureVars.ttx
 Tests/varLib/data/test_results/InterpolateLayout.ttx
 Tests/varLib/data/test_results/InterpolateLayout2.ttx
 Tests/varLib/data/test_results/InterpolateLayoutGPOS_1_diff.ttx

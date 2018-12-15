@@ -145,6 +145,10 @@ Glyph set expansion:
   --no-recommended-glyphs
       Do not add glyphs 0, 1, 2, and 3 to the subset, unless specified in
       glyph set. [default]
+  --no-layout-closure
+      Do not expand glyph set to add glyphs produced by OpenType layout
+      features.  Instead, OpenType layout features will be subset to only
+      rules that are relevant to the otherwise-specified glyph set.
   --layout-features[+|-]=<feature>[,<feature>...]
       Specify (=), add to (+=) or exclude from (-=) the comma-separated
       set of OpenType layout feature tags that will be preserved.
@@ -168,6 +172,10 @@ Glyph set expansion:
             * Keep all features.
         --layout-features+=aalt --layout-features-=vrt2
             * Keep default set of features plus 'aalt', but drop 'vrt2'.
+  --layout-scripts[+|-]=<script>[,<script>...]
+      Specify (=), add to (+=) or exclude from (-=) the comma-separated
+      set of OpenType layout script tags that will be preserved.  By
+      default all scripts are retained ('*').
 
 Hinting options:
   --hinting
@@ -464,10 +472,10 @@ def closure_glyphs(self, s, cur_glyphs):
 
 @_add_method(otTables.AlternateSubst)
 def subset_glyphs(self, s):
-	self.alternates = {g:vlist
+	self.alternates = {g:[v for v in vlist if v in s.glyphs]
 					   for g,vlist in self.alternates.items()
 					   if g in s.glyphs and
-					   all(v in s.glyphs for v in vlist)}
+					   any(v in s.glyphs for v in vlist)}
 	return bool(self.alternates)
 
 @_add_method(otTables.LigatureSubst)
@@ -1408,7 +1416,7 @@ def closure_glyphs(self, s):
 	del s.table
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def subset_glyphs(self, s):
 	s.glyphs = s.glyphs_gsubed
 	if self.table.LookupList:
@@ -1419,14 +1427,14 @@ def subset_glyphs(self, s):
 	return True
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def retain_empty_scripts(self):
 	# https://github.com/behdad/fonttools/issues/518
 	# https://bugzilla.mozilla.org/show_bug.cgi?id=1080739#c15
 	return self.__class__ == ttLib.getTableClass('GSUB')
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def subset_lookups(self, lookup_indices):
 	"""Retains specified lookups, then removes empty features, language
 	systems, and scripts."""
@@ -1447,14 +1455,14 @@ def subset_lookups(self, lookup_indices):
 		self.table.ScriptList.subset_features(feature_indices, self.retain_empty_scripts())
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def neuter_lookups(self, lookup_indices):
 	"""Sets lookups not in lookup_indices to None."""
 	if self.table.LookupList:
 		self.table.LookupList.neuter_lookups(lookup_indices)
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def prune_lookups(self, remap=True):
 	"""Remove (default) or neuter unreferenced lookups"""
 	if self.table.ScriptList:
@@ -1478,7 +1486,7 @@ def prune_lookups(self, remap=True):
 		self.neuter_lookups(lookup_indices)
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def subset_feature_tags(self, feature_tags):
 	if self.table.FeatureList:
 		feature_indices = \
@@ -1491,6 +1499,15 @@ def subset_feature_tags(self, feature_tags):
 		feature_indices = []
 	if self.table.ScriptList:
 		self.table.ScriptList.subset_features(feature_indices, self.retain_empty_scripts())
+
+@_add_method(ttLib.getTableClass('GSUB'),
+	     ttLib.getTableClass('GPOS'))
+def subset_script_tags(self, script_tags):
+	if self.table.ScriptList:
+		self.table.ScriptList.ScriptRecord = \
+			[s for s in self.table.ScriptList.ScriptRecord
+			 if s.ScriptTag in script_tags]
+		self.table.ScriptList.ScriptCount = len(self.table.ScriptList.ScriptRecord)
 
 @_add_method(ttLib.getTableClass('GSUB'),
 			 ttLib.getTableClass('GPOS'))
@@ -1508,9 +1525,11 @@ def prune_features(self):
 		self.table.ScriptList.subset_features(feature_indices, self.retain_empty_scripts())
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def prune_pre_subset(self, font, options):
 	# Drop undesired features
+	if '*' not in options.layout_scripts:
+		self.subset_script_tags(options.layout_scripts)
 	if '*' not in options.layout_features:
 		self.subset_feature_tags(options.layout_features)
 	# Neuter unreferenced lookups
@@ -1518,7 +1537,7 @@ def prune_pre_subset(self, font, options):
 	return True
 
 @_add_method(ttLib.getTableClass('GSUB'),
-			 ttLib.getTableClass('GPOS'))
+	     ttLib.getTableClass('GPOS'))
 def remove_redundant_langsys(self):
 	table = self.table
 	if not table.ScriptList or not table.FeatureList:
@@ -2503,7 +2522,8 @@ def prune_post_subset(self, font, options):
 				for k in ['BlueValues', 'OtherBlues',
 					  'FamilyBlues', 'FamilyOtherBlues',
 					  'BlueScale', 'BlueShift', 'BlueFuzz',
-					  'StemSnapH', 'StemSnapV', 'StdHW', 'StdVW']:
+					  'StemSnapH', 'StemSnapV', 'StdHW', 'StdVW',
+					  'ForceBold', 'LanguageGroup', 'ExpansionFactor']:
 					if hasattr(priv, k):
 						setattr(priv, k, None)
 
@@ -2669,6 +2689,10 @@ def prune_pre_subset(self, font, options):
 		nameIDs.update([inst.subfamilyNameID for inst in fvar.instances])
 		nameIDs.update([inst.postscriptNameID for inst in fvar.instances
 				if inst.postscriptNameID != 0xFFFF])
+	stat = font.get('STAT')
+	if stat:
+		nameIDs.update([val_rec.ValueNameID for val_rec in stat.table.AxisValueArray.AxisValue])
+		nameIDs.update([axis_rec.AxisNameID for axis_rec in stat.table.DesignAxisRecord.Axis])
 	if '*' not in options.name_IDs:
 		self.names = [n for n in self.names if n.nameID in nameIDs]
 	if not options.name_legacy:
@@ -2754,7 +2778,9 @@ class Options(object):
 		self.passthrough_tables = False  # keep/drop tables we can't subset
 		self.hinting_tables = self._hinting_tables_default[:]
 		self.legacy_kern = False # drop 'kern' table if GPOS available
+		self.layout_closure = True
 		self.layout_features = self._layout_features_default[:]
+		self.layout_scripts = ['*']
 		self.ignore_missing_glyphs = False
 		self.ignore_missing_unicodes = True
 		self.hinting = True
@@ -2963,7 +2989,7 @@ class Subsetter(object):
 					self.glyphs.add(font.getGlyphName(i))
 				log.info("Added first four glyphs to subset")
 
-		if 'GSUB' in font:
+		if self.options.layout_closure and 'GSUB' in font:
 			with timer("close glyph list over 'GSUB'"):
 				log.info("Closing glyph list over 'GSUB': %d glyphs before",
 						 len(self.glyphs))
@@ -3137,8 +3163,6 @@ def load_font(fontFile,
 
 @timer("compile and save font")
 def save_font(font, outfile, options):
-	if options.flavor and not hasattr(font, 'flavor'):
-		raise Exception("fonttools version does not support flavors.")
 	if options.with_zopfli and options.flavor == "woff":
 		from fontTools.ttLib import sfnt
 		sfnt.USE_ZOPFLI = True
@@ -3215,8 +3239,7 @@ def main(args=None):
 	args = args[1:]
 
 	subsetter = Subsetter(options=options)
-	basename, extension = splitext(fontfile)
-	outfile = basename + '.subset' + extension
+	outfile = None
 	glyphs = []
 	gids = []
 	unicodes = []
@@ -3267,6 +3290,14 @@ def main(args=None):
 
 	dontLoadGlyphNames = not options.glyph_names and not glyphs
 	font = load_font(fontfile, options, dontLoadGlyphNames=dontLoadGlyphNames)
+
+	if outfile is None:
+		basename, _ = splitext(fontfile)
+		if options.flavor is not None:
+			ext = "." + options.flavor.lower()
+		else:
+			ext = ".ttf" if font.sfntVersion == "\0\1\0\0" else ".otf"
+		outfile = basename + ".subset" + ext
 
 	with timer("compile glyph list"):
 		if wildcard_glyphs:
