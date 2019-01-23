@@ -95,7 +95,7 @@
           </ConditionTable>
         </ConditionSet>
         <FeatureTableSubstitution>
-          <Version value="0x00010001"/>
+          <Version value="0x00010000"/>
           <!-- SubstitutionCount=1 -->
           <SubstitutionRecord index="0">
             <FeatureIndex value="0"/>
@@ -108,48 +108,6 @@
         </FeatureTableSubstitution>
       </FeatureVariationRecord>
       <FeatureVariationRecord index="1">
-        <ConditionSet>
-          <!-- ConditionCount=1 -->
-          <ConditionTable index="0" Format="1">
-            <AxisIndex value="0"/>
-            <FilterRangeMinValue value="0.20886"/>
-            <FilterRangeMaxValue value="1.0"/>
-          </ConditionTable>
-        </ConditionSet>
-        <FeatureTableSubstitution>
-          <Version value="0x00010001"/>
-          <!-- SubstitutionCount=1 -->
-          <SubstitutionRecord index="0">
-            <FeatureIndex value="0"/>
-            <Feature>
-              <!-- LookupCount=1 -->
-              <LookupListIndex index="0" value="0"/>
-            </Feature>
-          </SubstitutionRecord>
-        </FeatureTableSubstitution>
-      </FeatureVariationRecord>
-      <FeatureVariationRecord index="2">
-        <ConditionSet>
-          <!-- ConditionCount=1 -->
-          <ConditionTable index="0" Format="1">
-            <AxisIndex value="1"/>
-            <FilterRangeMinValue value="0.75"/>
-            <FilterRangeMaxValue value="1.0"/>
-          </ConditionTable>
-        </ConditionSet>
-        <FeatureTableSubstitution>
-          <Version value="0x00010001"/>
-          <!-- SubstitutionCount=1 -->
-          <SubstitutionRecord index="0">
-            <FeatureIndex value="0"/>
-            <Feature>
-              <!-- LookupCount=1 -->
-              <LookupListIndex index="0" value="1"/>
-            </Feature>
-          </SubstitutionRecord>
-        </FeatureTableSubstitution>
-      </FeatureVariationRecord>
-      <FeatureVariationRecord index="3">
         <ConditionSet>
           <!-- ConditionCount=2 -->
           <ConditionTable index="0" Format="1">
@@ -164,13 +122,55 @@
           </ConditionTable>
         </ConditionSet>
         <FeatureTableSubstitution>
-          <Version value="0x00010001"/>
+          <Version value="0x00010000"/>
           <!-- SubstitutionCount=1 -->
           <SubstitutionRecord index="0">
             <FeatureIndex value="0"/>
             <Feature>
               <!-- LookupCount=1 -->
               <LookupListIndex index="0" value="2"/>
+            </Feature>
+          </SubstitutionRecord>
+        </FeatureTableSubstitution>
+      </FeatureVariationRecord>
+      <FeatureVariationRecord index="2">
+        <ConditionSet>
+          <!-- ConditionCount=1 -->
+          <ConditionTable index="0" Format="1">
+            <AxisIndex value="1"/>
+            <FilterRangeMinValue value="0.75"/>
+            <FilterRangeMaxValue value="1.0"/>
+          </ConditionTable>
+        </ConditionSet>
+        <FeatureTableSubstitution>
+          <Version value="0x00010000"/>
+          <!-- SubstitutionCount=1 -->
+          <SubstitutionRecord index="0">
+            <FeatureIndex value="0"/>
+            <Feature>
+              <!-- LookupCount=1 -->
+              <LookupListIndex index="0" value="1"/>
+            </Feature>
+          </SubstitutionRecord>
+        </FeatureTableSubstitution>
+      </FeatureVariationRecord>
+      <FeatureVariationRecord index="3">
+        <ConditionSet>
+          <!-- ConditionCount=1 -->
+          <ConditionTable index="0" Format="1">
+            <AxisIndex value="0"/>
+            <FilterRangeMinValue value="0.20886"/>
+            <FilterRangeMaxValue value="1.0"/>
+          </ConditionTable>
+        </ConditionSet>
+        <FeatureTableSubstitution>
+          <Version value="0x00010000"/>
+          <!-- SubstitutionCount=1 -->
+          <SubstitutionRecord index="0">
+            <FeatureIndex value="0"/>
+            <Feature>
+              <!-- LookupCount=1 -->
+              <LookupListIndex index="0" value="0"/>
             </Feature>
           </SubstitutionRecord>
         </FeatureTableSubstitution>

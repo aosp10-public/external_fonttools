@@ -1,3 +1,79 @@
+3.35.0 (released 2019-01-07)
+----------------------------
+
+- [psCharStrings] In ``encodeFloat`` function, use float's "general format" with
+  8 digits of precision (i.e. ``%8g``) instead of ``str()``. This works around
+  a macOS rendering issue when real numbers in CFF table are too long, and
+  also makes sure that floats are encoded with the same precision in python 2.7
+  and 3.x (#1430, googlei18n/ufo2ft#306).
+- [_n_a_m_e/fontBuilder] Make ``_n_a_m_e_table.addMultilingualName`` also add
+  Macintosh (platformID=1) names by default. Added options to ``FontBuilder``
+  ``setupNameTable`` method to optionally disable Macintosh or Windows names.
+  (#1359, #1431).
+- [varLib] Make ``build`` optionally accept a ``DesignSpaceDocument`` object,
+  instead of a designspace file path. The caller can now set the ``font``
+  attribute of designspace's sources to a TTFont object, thus allowing to
+  skip filenames manipulation altogether (#1416, #1425).
+- [sfnt] Allow SFNTReader objects to be deep-copied.
+- Require typing>=3.6.4 on py27 to fix issue with singledispatch (#1423).
+- [designspaceLib/t1Lib/macRes] Fixed some cases where pathlib.Path objects were
+  not accepted (#1421).
+- [varLib] Fixed merging of multiple PairPosFormat2 subtables (#1411).
+- [varLib] The default STAT table version is now set to 1.1, to improve
+  compatibility with legacy applications (#1413).
+
+3.34.2 (released 2018-12-17)
+----------------------------
+
+- [merge] Fixed AssertionError when none of the script tables in GPOS/GSUB have
+  a DefaultLangSys record (#1408, 135a4a1).
+
+3.34.1 (released 2018-12-17)
+----------------------------
+
+- [varLib] Work around macOS rendering issue for composites without gvar entry (#1381).
+
+3.34.0 (released 2018-12-14)
+----------------------------
+
+- [varLib] Support generation of CFF2 variable fonts. ``model.reorderMasters()``
+  now supports arbitrary mapping. Fix handling of overlapping ranges for feature
+  variations (#1400).
+- [cffLib, subset] Code clean-up and fixing related to CFF2 support.
+- [ttLib.tables.ttProgram] Use raw strings for regex patterns (#1389).
+- [fontbuilder] Initial support for building CFF2 fonts. Set CFF's
+  ``FontMatrix`` automatically from unitsPerEm.
+- [plistLib] Accept the more general ``collections.Mapping`` instead of the
+  specific ``dict`` class to support custom data classes that should serialize
+  to dictionaries.
+
+3.33.0 (released 2018-11-30)
+----------------------------
+- [subset] subsetter bug fix with variable fonts.
+- [varLib.featureVar] Improve FeatureVariations generation with many rules.
+- [varLib] Enable sparse masters when building variable fonts:
+  https://github.com/fonttools/fonttools/pull/1368#issuecomment-437257368
+- [varLib.mutator] Add IDEF for GETVARIATION opcode, for handling hints in an
+  instance.
+- [ttLib] Ignore the length of kern table subtable format 0
+
+3.32.0 (released 2018-11-01)
+----------------------------
+
+- [ufoLib] Make ``UFOWriter`` a subclass of ``UFOReader``, and use mixins
+  for shared methods (#1344).
+- [featureVars] Fixed normalization error when a condition's minimum/maximum
+  attributes are missing in designspace ``<rule>`` (#1366).
+- [setup.py] Added ``[plot]`` to extras, to optionally install ``matplotlib``,
+  needed to use the ``fonTools.varLib.plot`` module.
+- [varLib] Take total bounding box into account when resolving model (7ee81c8).
+  If multiple axes have the same range ratio, cut across both (62003f4).
+- [subset] Don't error if ``STAT`` has no ``AxisValue`` tables.
+- [fontBuilder] Added a new submodule which contains a ``FontBuilder`` wrapper
+  class around ``TTFont`` that makes it easier to create a working TTF or OTF
+  font from scratch with code. NOTE: the API is still experimental and may
+  change in future versions.
+
 3.31.0 (released 2018-10-21)
 ----------------------------
 

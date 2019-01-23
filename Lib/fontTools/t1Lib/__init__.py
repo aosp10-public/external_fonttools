@@ -108,11 +108,12 @@ class T1Font(object):
 
 def read(path, onlyHeader=False):
 	"""reads any Type 1 font file, returns raw data"""
-	normpath = path.lower()
+	_, ext = os.path.splitext(path)
+	ext = ext.lower()
 	creator, typ = getMacCreatorAndType(path)
 	if typ == 'LWFN':
 		return readLWFN(path, onlyHeader), 'LWFN'
-	if normpath[-4:] == '.pfb':
+	if ext == '.pfb':
 		return readPFB(path, onlyHeader), 'PFB'
 	else:
 		return readOther(path), 'OTHER'
@@ -164,9 +165,8 @@ def readLWFN(path, onlyHeader=False):
 			elif code in [3, 5]:
 				break
 			elif code == 4:
-				f = open(path, "rb")
-				data.append(f.read())
-				f.close()
+				with open(path, "rb") as f:
+					data.append(f.read())
 			elif code == 0:
 				pass # comment, ignore
 			else:
@@ -179,35 +179,32 @@ def readLWFN(path, onlyHeader=False):
 
 def readPFB(path, onlyHeader=False):
 	"""reads a PFB font file, returns raw data"""
-	f = open(path, "rb")
 	data = []
-	while True:
-		if f.read(1) != bytechr(128):
-			raise T1Error('corrupt PFB file')
-		code = byteord(f.read(1))
-		if code in [1, 2]:
-			chunklen = stringToLong(f.read(4))
-			chunk = f.read(chunklen)
-			assert len(chunk) == chunklen
-			data.append(chunk)
-		elif code == 3:
-			break
-		else:
-			raise T1Error('bad chunk code: ' + repr(code))
-		if onlyHeader:
-			break
-	f.close()
+	with open(path, "rb") as f:
+		while True:
+			if f.read(1) != bytechr(128):
+				raise T1Error('corrupt PFB file')
+			code = byteord(f.read(1))
+			if code in [1, 2]:
+				chunklen = stringToLong(f.read(4))
+				chunk = f.read(chunklen)
+				assert len(chunk) == chunklen
+				data.append(chunk)
+			elif code == 3:
+				break
+			else:
+				raise T1Error('bad chunk code: ' + repr(code))
+			if onlyHeader:
+				break
 	data = bytesjoin(data)
 	assertType1(data)
 	return data
 
 def readOther(path):
 	"""reads any (font) file, returns raw data"""
-	f = open(path, "rb")
-	data = f.read()
-	f.close()
+	with open(path, "rb") as f:
+		data = f.read()
 	assertType1(data)
-
 	chunks = findEncryptedChunks(data)
 	data = []
 	for isEncrypted, chunk in chunks:
@@ -244,8 +241,7 @@ def writeLWFN(path, data):
 
 def writePFB(path, data):
 	chunks = findEncryptedChunks(data)
-	f = open(path, "wb")
-	try:
+	with open(path, "wb") as f:
 		for isEncrypted, chunk in chunks:
 			if isEncrypted:
 				code = 2
@@ -255,13 +251,10 @@ def writePFB(path, data):
 			f.write(longToString(len(chunk)))
 			f.write(chunk)
 		f.write(bytechr(128) + bytechr(3))
-	finally:
-		f.close()
 
 def writeOther(path, data, dohex=False):
 	chunks = findEncryptedChunks(data)
-	f = open(path, "wb")
-	try:
+	with open(path, "wb") as f:
 		hexlinelen = HEXLINELENGTH // 2
 		for isEncrypted, chunk in chunks:
 			if isEncrypted:
@@ -275,8 +268,6 @@ def writeOther(path, data, dohex=False):
 					chunk = chunk[hexlinelen:]
 			else:
 				f.write(chunk)
-	finally:
-		f.close()
 
 
 # decryption tools
