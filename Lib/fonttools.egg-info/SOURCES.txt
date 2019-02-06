@@ -165,6 +165,7 @@ Lib/fontTools/subset/__main__.py
 Lib/fontTools/subset/cff.py
 Lib/fontTools/svgLib/__init__.py
 Lib/fontTools/svgLib/path/__init__.py
+Lib/fontTools/svgLib/path/arc.py
 Lib/fontTools/svgLib/path/parser.py
 Lib/fontTools/t1Lib/__init__.py
 Lib/fontTools/ttLib/__init__.py
@@ -397,6 +398,8 @@ Tests/feaLib/data/baseClass.fea
 Tests/feaLib/data/baseClass.feax
 Tests/feaLib/data/bug1307.fea
 Tests/feaLib/data/bug1307.ttx
+Tests/feaLib/data/bug1459.fea
+Tests/feaLib/data/bug1459.ttx
 Tests/feaLib/data/bug453.fea
 Tests/feaLib/data/bug453.ttx
 Tests/feaLib/data/bug457.fea
@@ -528,6 +531,7 @@ Tests/feaLib/data/include/subdir/include2.fea
 Tests/fontBuilder/fontBuilder_test.py
 Tests/fontBuilder/data/test.otf.ttx
 Tests/fontBuilder/data/test.ttf.ttx
+Tests/fontBuilder/data/test_uvs.ttf.ttx
 Tests/fontBuilder/data/test_var.otf.ttx
 Tests/fontBuilder/data/test_var.ttf.ttx
 Tests/misc/arrayTools_test.py
@@ -724,6 +728,8 @@ Tests/ttLib/tables/data/C_F_F_.bin
 Tests/ttLib/tables/data/C_F_F_.ttx
 Tests/ttLib/tables/data/C_F_F__2.bin
 Tests/ttLib/tables/data/C_F_F__2.ttx
+Tests/ttLib/tables/data/_c_m_a_p_format_14.ttx
+Tests/ttLib/tables/data/_c_m_a_p_format_14_bw_compat.ttx
 Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.glyf.bin
 Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.head.bin
 Tests/ttLib/tables/data/_g_l_y_f_outline_flag_bit6.loca.bin
@@ -1409,6 +1415,7 @@ Tests/varLib/data/FeatureVars.designspace
 Tests/varLib/data/InterpolateLayout.designspace
 Tests/varLib/data/InterpolateLayout2.designspace
 Tests/varLib/data/InterpolateLayout3.designspace
+Tests/varLib/data/SparseMasters.designspace
 Tests/varLib/data/TestCFF2.designspace
 Tests/varLib/data/TestCFF2VF.otf
 Tests/varLib/data/master_cff2/TestCFF2_Black.otf
@@ -1417,6 +1424,9 @@ Tests/varLib/data/master_cff2/TestCFF2_Regular.otf
 Tests/varLib/data/master_ttx_getvar_ttf/Mutator_Getvar.ttx
 Tests/varLib/data/master_ttx_interpolatable_otf/TestFamily2-Master0.ttx
 Tests/varLib/data/master_ttx_interpolatable_otf/TestFamily2-Master1.ttx
+Tests/varLib/data/master_ttx_interpolatable_ttf/SparseMasters-Bold.ttx
+Tests/varLib/data/master_ttx_interpolatable_ttf/SparseMasters-Medium.ttx
+Tests/varLib/data/master_ttx_interpolatable_ttf/SparseMasters-Regular.ttx
 Tests/varLib/data/master_ttx_interpolatable_ttf/TestFamily-Master0.ttx
 Tests/varLib/data/master_ttx_interpolatable_ttf/TestFamily-Master1.ttx
 Tests/varLib/data/master_ttx_interpolatable_ttf/TestFamily-Master2.ttx
@@ -1731,5 +1741,6 @@ Tests/varLib/data/test_results/InterpolateTestCFF2VF.ttx
 Tests/varLib/data/test_results/Mutator.ttx
 Tests/varLib/data/test_results/Mutator_Getvar-instance.ttx
 Tests/varLib/data/test_results/Mutator_IUP-instance.ttx
+Tests/varLib/data/test_results/SparseMasters.ttx
 Tests/voltLib/lexer_test.py
 Tests/voltLib/parser_test.py

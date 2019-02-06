@@ -293,7 +293,10 @@ class FeatureBlock(Block):
         builder.end_feature()
 
     def asFea(self, indent=""):
-        res = indent + "feature %s {\n" % self.name.strip()
+        res = indent + "feature %s " % self.name.strip()
+        if self.use_extension:
+            res += "useExtension "
+        res += "{\n"
         res += Block.asFea(self, indent=indent)
         res += indent + "} %s;\n" % self.name.strip()
         return res
@@ -329,7 +332,10 @@ class LookupBlock(Block):
         builder.end_lookup_block()
 
     def asFea(self, indent=""):
-        res = "lookup {} {{\n".format(self.name)
+        res = "lookup {} ".format(self.name)
+        if self.use_extension:
+            res += "useExtension "
+        res += "{\n"
         res += Block.asFea(self, indent=indent)
         res += "{}}} {};\n".format(indent, self.name)
         return res
@@ -957,12 +963,12 @@ class PairPosStatement(Statement):
         res = "enum " if self.enumerated else ""
         if self.valuerecord2:
             res += "pos {} {} {} {};".format(
-                self.glyphs1.asFea(), self.valuerecord1.makeString(),
-                self.glyphs2.asFea(), self.valuerecord2.makeString())
+                self.glyphs1.asFea(), self.valuerecord1.asFea(),
+                self.glyphs2.asFea(), self.valuerecord2.asFea())
         else:
             res += "pos {} {} {};".format(
                 self.glyphs1.asFea(), self.glyphs2.asFea(),
-                self.valuerecord1.makeString())
+                self.valuerecord1.asFea())
         return res
 
 
@@ -1063,12 +1069,12 @@ class SinglePosStatement(Statement):
             if len(self.prefix):
                 res += " ".join(map(asFea, self.prefix)) + " "
             res += " ".join([asFea(x[0]) + "'" + (
-                (" " + x[1].makeString()) if x[1] else "") for x in self.pos])
+                (" " + x[1].asFea()) if x[1] else "") for x in self.pos])
             if len(self.suffix):
                 res += " " + " ".join(map(asFea, self.suffix))
         else:
             res += " ".join([asFea(x[0]) + " " +
-                             (x[1].makeString() if x[1] else "") for x in self.pos])
+                             (x[1].asFea() if x[1] else "") for x in self.pos])
         res += ";"
         return res
 
@@ -1114,13 +1120,15 @@ class ValueRecord(Expression):
                 hash(self.xPlaDevice) ^ hash(self.yPlaDevice) ^
                 hash(self.xAdvDevice) ^ hash(self.yAdvDevice))
 
-    def makeString(self, vertical=None):
+    def asFea(self, indent=""):
+        if not self:
+            return "<NULL>"
+
         x, y = self.xPlacement, self.yPlacement
         xAdvance, yAdvance = self.xAdvance, self.yAdvance
         xPlaDevice, yPlaDevice = self.xPlaDevice, self.yPlaDevice
         xAdvDevice, yAdvDevice = self.xAdvDevice, self.yAdvDevice
-        if vertical is None:
-            vertical = self.vertical
+        vertical = self.vertical
 
         # Try format A, if possible.
         if x is None and y is None:
@@ -1139,6 +1147,23 @@ class ValueRecord(Expression):
             x, y, xAdvance, yAdvance,
             deviceToString(xPlaDevice), deviceToString(yPlaDevice),
             deviceToString(xAdvDevice), deviceToString(yAdvDevice))
+
+    def __bool__(self):
+        return any(
+            getattr(self, v) is not None
+            for v in [
+                "xPlacement",
+                "yPlacement",
+                "xAdvance",
+                "yAdvance",
+                "xPlaDevice",
+                "yPlaDevice",
+                "xAdvDevice",
+                "yAdvDevice",
+            ]
+        )
+
+    __nonzero__ = __bool__
 
 
 class ValueRecordDefinition(Statement):

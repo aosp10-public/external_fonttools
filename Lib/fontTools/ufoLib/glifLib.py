@@ -290,7 +290,7 @@ class GlyphSet(_UFOBaseIO):
 		"""
 		fileName = self.contents[glyphName]
 		try:
-			return self.fs.getbytes(fileName)
+			return self.fs.readbytes(fileName)
 		except fs.errors.ResourceNotFound:
 			raise GlifLibError(
 				"The file '%s' associated with glyph '%s' in contents.plist "
@@ -316,7 +316,7 @@ class GlyphSet(_UFOBaseIO):
 		'glyphObject' argument can be any kind of object (even None);
 		the readGlyph() method will attempt to set the following
 		attributes on it:
-			"width"      the advance with of the glyph
+			"width"      the advance width of the glyph
 			"height"     the advance height of the glyph
 			"unicodes"   a list of unicode values for this glyph
 			"note"       a string
@@ -420,10 +420,10 @@ class GlyphSet(_UFOBaseIO):
 		if (
 			self._havePreviousFile
 			and self.fs.exists(fileName)
-			and data == self.fs.getbytes(fileName)
+			and data == self.fs.readbytes(fileName)
 		):
 			return
-		self.fs.setbytes(fileName, data)
+		self.fs.writebytes(fileName, data)
 
 	def deleteGlyph(self, glyphName):
 		"""Permanently delete the glyph from the glyph set on disk. Will
