@@ -39,6 +39,11 @@ extras_require = {
 	"lxml": [
 		"lxml >= 4.0, < 5",
 		"singledispatch >= 3.4.0.3; python_version < '3.4'",
+		# typing >= 3.6.4 is required when using ABC collections with the
+		# singledispatch backport, see:
+		# https://github.com/fonttools/fonttools/issues/1423
+		# https://github.com/python/typing/issues/484
+		"typing >= 3.6.4; python_version < '3.4'",
 	],
 	# for fontTools.sfnt and fontTools.woff2: to compress/uncompress
 	# WOFF 1.0 and WOFF 2.0 webfonts.
@@ -58,12 +63,22 @@ extras_require = {
 			"python_version < '3.7' and platform_python_implementation != 'PyPy'"
 		),
 	],
+	# for graphite type tables in ttLib/tables (Silf, Glat, Gloc)
+	"graphite": [
+		"lz4 >= 1.7.4.2"
+	],
 	# for fontTools.interpolatable: to solve the "minimum weight perfect
 	# matching problem in bipartite graphs" (aka Assignment problem)
 	"interpolatable": [
 		# use pure-python alternative on pypy
 		"scipy; platform_python_implementation != 'PyPy'",
 		"munkres; platform_python_implementation == 'PyPy'",
+	],
+	# for fontTools.varLib.plot, to visualize DesignSpaceDocument and resulting
+	# VariationModel
+	"plot": [
+		# TODO: figure out the minimum version of matplotlib that we need
+		"matplotlib",
 	],
 	# for fontTools.misc.symfont, module for symbolic font statistics analysis
 	"symfont": [
@@ -337,7 +352,7 @@ def find_data_files(manpath="share/man"):
 
 setup(
 	name="fonttools",
-	version="3.31.0",
+	version="3.35.0",
 	description="Tools to manipulate font files",
 	author="Just van Rossum",
 	author_email="just@letterror.com",

@@ -4,6 +4,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import os
+import sys
 import pytest
 import warnings
 
@@ -237,12 +238,10 @@ def test_unicodes(tmpdir):
     new.read(testDocPath)
     new.write(testDocPath2)
     # compare the file contents
-    f1 = open(testDocPath, 'r', encoding='utf-8')
-    t1 = f1.read()
-    f1.close()
-    f2 = open(testDocPath2, 'r', encoding='utf-8')
-    t2 = f2.read()
-    f2.close()
+    with open(testDocPath, 'r', encoding='utf-8') as f1:
+        t1 = f1.read()
+    with open(testDocPath2, 'r', encoding='utf-8') as f2:
+        t2 = f2.read()
     assert t1 == t2
     # check the unicode values read from the document
     assert new.instances[0].glyphs['arrow']['unicodes'] == [100,200,300]
@@ -337,12 +336,10 @@ def test_localisedNames(tmpdir):
     new = DesignSpaceDocument()
     new.read(testDocPath)
     new.write(testDocPath2)
-    f1 = open(testDocPath, 'r', encoding='utf-8')
-    t1 = f1.read()
-    f1.close()
-    f2 = open(testDocPath2, 'r', encoding='utf-8')
-    t2 = f2.read()
-    f2.close()
+    with open(testDocPath, 'r', encoding='utf-8') as f1:
+        t1 = f1.read()
+    with open(testDocPath2, 'r', encoding='utf-8') as f2:
+        t2 = f2.read()
     assert t1 == t2
 
 
@@ -761,14 +758,12 @@ def _addUnwrappedCondition(path):
     # only for testing, so we can make an invalid designspace file
     # older designspace files may have conditions that are not wrapped in a conditionset
     # These can be read into a new conditionset.
-    f = open(path, 'r', encoding='utf-8')
-    d = f.read()
+    with open(path, 'r', encoding='utf-8') as f:
+        d = f.read()
     print(d)
-    f.close()
     d = d.replace('<rule name="named.rule.1">', '<rule name="named.rule.1">\n\t<condition maximum="22" minimum="33" name="axisName_a" />')
-    f = open(path, 'w', encoding='utf-8')
-    f.write(d)
-    f.close()
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(d)
 
 def test_documentLib(tmpdir):
     # roundtrip test of the document lib with some nested data
@@ -791,3 +786,64 @@ def test_documentLib(tmpdir):
     assert dummyKey in new.lib
     assert new.lib[dummyKey] == dummyData
 
+
+def test_updatePaths(tmpdir):
+    doc = DesignSpaceDocument()
+    doc.path = str(tmpdir / "foo" / "bar" / "MyDesignspace.designspace")
+
+    s1 = SourceDescriptor()
+    doc.addSource(s1)
+
+    doc.updatePaths()
+
+    # expect no changes
+    assert s1.path is None
+    assert s1.filename is None
+
+    name1 = "../masters/Source1.ufo"
+    path1 = posix(str(tmpdir / "foo" / "masters" / "Source1.ufo"))
+
+    s1.path = path1
+    s1.filename = None
+
+    doc.updatePaths()
+
+    assert s1.path == path1
+    assert s1.filename == name1  # empty filename updated
+
+    name2 = "../masters/Source2.ufo"
+    s1.filename = name2
+
+    doc.updatePaths()
+
+    # conflicting filename discarded, path always gets precedence
+    assert s1.path == path1
+    assert s1.filename == "../masters/Source1.ufo"
+
+    s1.path = None
+    s1.filename = name2
+
+    doc.updatePaths()
+
+    # expect no changes
+    assert s1.path is None
+    assert s1.filename == name2
+
+
+@pytest.mark.skipif(sys.version_info[:2] < (3, 6), reason="pathlib is only tested on 3.6 and up")
+def test_read_with_path_object():
+    import pathlib
+    source = (pathlib.Path(__file__) / "../data/test.designspace").resolve()
+    assert source.exists()
+    doc = DesignSpaceDocument()
+    doc.read(source)
+
+
+@pytest.mark.skipif(sys.version_info[:2] < (3, 6), reason="pathlib is only tested on 3.6 and up")
+def test_with_with_path_object(tmpdir):
+    import pathlib
+    tmpdir = str(tmpdir)
+    dest = pathlib.Path(tmpdir) / "test.designspace"
+    doc = DesignSpaceDocument()
+    doc.write(dest)
+    assert dest.exists()

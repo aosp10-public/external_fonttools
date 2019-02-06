@@ -18,6 +18,13 @@ Installation
 FontTools requires `Python <http://www.python.org/download/>`__ 2.7, 3.4
 or later.
 
+**NOTE** After January 1 2019, until no later than June 30 2019, the support
+for *Python 2.7* will be limited to only bug fixes, and no new features will
+be added to the ``py27`` branch. The upcoming FontTools 4.x series will require
+*Python 3.5* or above. You can read more `here <https://python3statement.org>`__
+and `here <https://github.com/fonttools/fonttools/issues/765>`__ for the
+reasons behind this decision.
+
 The package is listed in the Python Package Index (PyPI), so you can
 install it with `pip <https://pip.pypa.io>`__:
 
@@ -245,6 +252,14 @@ are required to unlock the extra features named "ufo", etc.
 
   *Extra:* ``interpolatable``
 
+- ``Lib/fontTools/varLib/plot.py``
+
+  Module for visualizing DesignSpaceDocument and resulting VariationModel.
+
+  * `matplotlib <https://pypi.org/pypi/matplotlib>`__: 2D plotting library.
+
+  *Extra:* ``plot``
+
 - ``Lib/fontTools/misc/symfont.py``
 
   Advanced module for symbolic font statistics analysis; it requires:
@@ -304,7 +319,7 @@ When you run the ``pytest`` command, the tests will run against the
 installed ``fontTools`` package, or the first one found in the
 ``PYTHONPATH``.
 
-You can also use `tox <https://testrun.org/tox/latest/>`__ to
+You can also use `tox <https://tox.readthedocs.io/en/latest/>`__ to
 automatically run tests on different Python versions in isolated virtual
 environments.
 
