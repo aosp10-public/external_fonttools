@@ -1,3 +1,51 @@
+3.37.0 (released 2019-01-28)
+----------------------------
+
+- [svgLib] Added support for converting elliptical arcs to cubic bezier curves
+  (#1464).
+- [py23] Added backport for ``math.isfinite``.
+- [varLib] Apply HIDDEN flag to fvar axis if designspace axis has attribute
+  ``hidden=1``.
+- Fixed "DeprecationWarning: invalid escape sequence" in Python 3.7.
+- [voltLib] Fixed parsing glyph groups. Distinguish different PROCESS_MARKS.
+  Accept COMPONENT glyph type.
+- [feaLib] Distinguish missing value and explicit ``<NULL>`` for PairPos2
+  format A (#1459). Round-trip ``useExtension`` keyword. Implemented
+  ``ValueRecord.asFea`` method.
+- [subset] Insert empty widths into hdmx when retaining gids (#1458).
+
+3.36.0 (released 2019-01-17)
+----------------------------
+
+- [ttx] Added ``--no-recalc-timestamp`` option to keep the original font's
+  ``head.modified`` timestamp (#1455, #46).
+- [ttx/psCharStrings] Fixed issues while dumping and round-tripping CFF2 table
+  with ttx (#1451, #1452, #1456).
+- [voltLib] Fixed check for duplicate anchors (#1450). Don't try to read past
+  the ``END`` operator in .vtp file (#1453).
+- [varLib] Use sentinel value -0x8000 (-32768) to ignore post.underlineThickness
+  and post.underlinePosition when generating MVAR deltas (#1449,
+  googlei18n/ufo2ft#308).
+- [subset] Added ``--retain-gids`` option to subset font without modifying the
+  current glyph indices (#1443, #1447).
+- [ufoLib] Replace deprecated calls to ``getbytes`` and ``setbytes`` with new
+  equivalent ``readbytes`` and ``writebytes`` calls. ``fs`` >= 2.2 no required.
+- [varLib] Allow loading masters from TTX files as well (#1441).
+
+3.35.2 (released 2019-01-14)
+----------------------------
+
+- [hmtx/vmtx]: Allow to compile/decompile ``hmtx`` and ``vmtx`` tables even
+  without the corresponding (required) metrics header tables, ``hhea`` and
+  ``vhea`` (#1439).
+- [varLib] Added support for localized axes' ``labelname`` and named instances'
+  ``stylename`` (#1438).
+
+3.35.1 (released 2019-01-09)
+----------------------------
+
+- [_m_a_x_p] Include ``maxComponentElements`` in ``maxp`` table's recalculation.
+
 3.35.0 (released 2019-01-07)
 ----------------------------
 

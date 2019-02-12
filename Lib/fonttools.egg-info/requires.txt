@@ -1,6 +1,6 @@
 
 [all]
-fs<3,>=2.1.1
+fs<3,>=2.2.0
 lxml<5,>=4.0
 zopfli>=0.1.4
 lz4>=1.7.4.2
@@ -56,7 +56,7 @@ sympy
 xattr
 
 [ufo]
-fs<3,>=2.1.1
+fs<3,>=2.2.0
 
 [ufo:python_version < "3.4"]
 enum34>=1.1.6

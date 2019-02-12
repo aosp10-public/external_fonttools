@@ -983,6 +983,16 @@ class T2CharString(object):
 			return
 		opcodes = self.opcodes
 		program = self.program
+
+		if isCFF2:
+			# If present, remove return and endchar operators.
+			if program and program[-1] in ("return", "endchar"):
+				program = program[:-1]
+		elif program and not isinstance(program[-1], basestring):
+			raise CharStringCompileError(
+				"T2CharString or Subr has items on the stack after last operator."
+			)
+
 		bytecode = []
 		encodeInt = self.getIntEncoder()
 		encodeFixed = self.getFixedEncoder()
@@ -1011,11 +1021,6 @@ class T2CharString(object):
 			log.error(bytecode)
 			raise
 		self.setBytecode(bytecode)
-
-		if isCFF2:
-			# If present, remove return and endchar operators.
-			if self.bytecode and (byteord(self.bytecode[-1]) in (11, 14)):
-				self.bytecode = self.bytecode[:-1]
 
 	def needsDecompilation(self):
 		return self.bytecode is not None
@@ -1088,13 +1093,12 @@ class T2CharString(object):
 				else:
 					args.append(token)
 			if args:
-				if self.isCFF2:
-					# CFF2Subr's can have numeric arguments on the stack after the last operator.
-					args = [str(arg) for arg in args]
-					line = ' '.join(args)
-					xmlWriter.write(line)
-				else:
-					assert 0, "T2Charstring or Subr has items on the stack after last operator."
+				# NOTE: only CFF2 charstrings/subrs can have numeric arguments on
+				# the stack after the last operator. Compiling this would fail if
+				# this is part of CFF 1.0 table.
+				args = [str(arg) for arg in args]
+				line = ' '.join(args)
+				xmlWriter.write(line)
 
 	def fromXML(self, name, attrs, content):
 		from fontTools.misc.textTools import binary2num, readHex

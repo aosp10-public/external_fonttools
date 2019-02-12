@@ -76,21 +76,24 @@ def _add_fvar(font, axes, instances):
 		axis.axisTag = Tag(a.tag)
 		# TODO Skip axes that have no variation.
 		axis.minValue, axis.defaultValue, axis.maxValue = a.minimum, a.default, a.maximum
-		axis.axisNameID = nameTable.addName(tounicode(a.labelNames['en']))
-		# TODO:
-		# Replace previous line with the following when the following issues are resolved:
-		# https://github.com/fonttools/fonttools/issues/930
-		# https://github.com/fonttools/fonttools/issues/931
-		# axis.axisNameID = nameTable.addMultilingualName(a.labelname, font)
+		axis.axisNameID = nameTable.addMultilingualName(a.labelNames, font)
+		axis.flags = int(a.hidden)
 		fvar.axes.append(axis)
 
 	for instance in instances:
 		coordinates = instance.location
-		name = tounicode(instance.styleName)
+
+		if "en" not in instance.localisedStyleName:
+			assert instance.styleName
+			localisedStyleName = dict(instance.localisedStyleName)
+			localisedStyleName["en"] = tounicode(instance.styleName)
+		else:
+			localisedStyleName = instance.localisedStyleName
+
 		psname = instance.postScriptFontName
 
 		inst = NamedInstance()
-		inst.subfamilyNameID = nameTable.addName(name)
+		inst.subfamilyNameID = nameTable.addMultilingualName(localisedStyleName)
 		if psname is not None:
 			psname = tounicode(psname)
 			inst.postscriptNameID = nameTable.addName(psname)
@@ -510,13 +513,28 @@ def _add_MVAR(font, masterModel, master_ttfs, axisTags):
 	lastTableTag = None
 	fontTable = None
 	tables = None
+	# HACK: we need to special-case post.underlineThickness and .underlinePosition
+	# and unilaterally/arbitrarily define a sentinel value to distinguish the case
+	# when a post table is present in a given master simply because that's where
+	# the glyph names in TrueType must be stored, but the underline values are not
+	# meant to be used for building MVAR's deltas. The value of -0x8000 (-36768)
+	# the minimum FWord (int16) value, was chosen for its unlikelyhood to appear
+	# in real-world underline position/thickness values.
+	specialTags = {"unds": -0x8000, "undo": -0x8000}
 	for tag, (tableTag, itemName) in sorted(MVAR_ENTRIES.items(), key=lambda kv: kv[1]):
 		if tableTag != lastTableTag:
 			tables = fontTable = None
 			if tableTag in font:
 				fontTable = font[tableTag]
-				tables = [master[tableTag] if tableTag in master else None
-					  for master in master_ttfs]
+				tables = []
+				for master in master_ttfs:
+					if tableTag not in master or (
+						tag in specialTags
+						and getattr(master[tableTag], itemName) == specialTags[tag]
+					):
+						tables.append(None)
+					else:
+						tables.append(master[tableTag])
 			lastTableTag = tableTag
 		if tables is None:
 			continue
@@ -662,10 +680,10 @@ def load_designspace(designspace):
 	instances = ds.instances
 
 	standard_axis_map = OrderedDict([
-		('weight',  ('wght', {'en':'Weight'})),
-		('width',   ('wdth', {'en':'Width'})),
-		('slant',   ('slnt', {'en':'Slant'})),
-		('optical', ('opsz', {'en':'Optical Size'})),
+		('weight',  ('wght', {'en': u'Weight'})),
+		('width',   ('wdth', {'en': u'Width'})),
+		('slant',   ('slnt', {'en': u'Slant'})),
+		('optical', ('opsz', {'en': u'Optical Size'})),
 		])
 
 	# Setup axes
@@ -684,7 +702,7 @@ def load_designspace(designspace):
 		else:
 			assert axis.tag is not None
 			if not axis.labelNames:
-				axis.labelNames["en"] = axis_name
+				axis.labelNames["en"] = tounicode(axis_name)
 
 		axes[axis_name] = axis
 	log.info("Axes:\n%s", pformat([axis.asdict() for axis in axes.values()]))
@@ -809,14 +827,36 @@ def build(designspace, master_finder=lambda s:s, exclude=[], optimize=True):
 	return vf, model, master_ttfs
 
 
+def _open_font(path, master_finder):
+	# load TTFont masters from given 'path': this can be either a .TTX or an
+	# OpenType binary font; or if neither of these, try use the 'master_finder'
+	# callable to resolve the path to a valid .TTX or OpenType font binary.
+	from fontTools.ttx import guessFileType
+
+	master_path = os.path.normpath(path)
+	tp = guessFileType(master_path)
+	if tp is None:
+		# not an OpenType binary/ttx, fall back to the master finder.
+		master_path = master_finder(master_path)
+		tp = guessFileType(master_path)
+	if tp in ("TTX", "OTX"):
+		font = TTFont()
+		font.importXML(master_path)
+	elif tp in ("TTF", "OTF", "WOFF", "WOFF2"):
+		font = TTFont(master_path)
+	else:
+		raise VarLibError("Invalid master path: %r" % master_path)
+	return font
+
+
 def load_masters(designspace, master_finder=lambda s: s):
 	"""Ensure that all SourceDescriptor.font attributes have an appropriate TTFont
 	object loaded, or else open TTFont objects from the SourceDescriptor.path
 	attributes.
 
-	The paths can point to either an OpenType font or to a UFO. In the latter case,
-	use the provided master_finder callable to map from UFO paths to the respective
-	master font binaries (e.g. .ttf or .otf).
+	The paths can point to either an OpenType font, a TTX file, or a UFO. In the
+	latter case, use the provided master_finder callable to map from UFO paths to
+	the respective master font binaries (e.g. .ttf, .otf or .ttx).
 
 	Return list of master TTFont objects in the same order they are listed in the
 	DesignSpaceDocument.
@@ -843,15 +883,10 @@ def load_masters(designspace, master_finder=lambda s: s):
 						"Designspace source '%s' has neither 'font' nor 'path' "
 						"attributes" % (master.name or "<Unknown>")
 					)
-				# 2. A SourceDescriptor's path might point to a UFO or an OpenType
-				# binary. Find out the hard way.
-				master_path = os.path.normpath(master.path)
-				try:
-					font = TTFont(master_path)
-				except (IOError, TTLibError):
-					# 3. Not an OpenType binary, fall back to the master finder.
-					master_path = master_finder(master_path)
-					font = TTFont(master_path)
+				# 2. A SourceDescriptor's path might point an OpenType binary, a
+				# TTX file, or another source file (e.g. UFO), in which case we
+				# resolve the path using 'master_finder' function
+				font = _open_font(master.path, master_finder)
 				master_fonts.append(font)
 
 	return master_fonts

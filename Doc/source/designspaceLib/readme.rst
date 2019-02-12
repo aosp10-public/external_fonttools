@@ -216,8 +216,6 @@ Attributes
 -  ``glyphs``: dict for special master definitions for glyphs. If glyphs
    need special masters (to record the results of executed rules for
    example). MutatorMath.
--  ``mutedGlyphNames``: list of glyphnames that should be suppressed in
-   the generation of this instance.
 -  ``kerning``: bool. Indicates if this instance needs its kerning
    calculated. MutatorMath.
 -  ``info``: bool. Indicated if this instance needs the interpolating
@@ -277,7 +275,8 @@ AxisDescriptor object
    dicts. MutatorMath + Varlib.
 -  ``labelNames``: dict. When defining a non-registered axis, it will be
    necessary to define user-facing readable names for the axis. Keyed by
-   xml:lang code. Varlib.
+   xml:lang code. Values are required to be ``unicode`` strings, even if
+   they only contain ASCII characters.
 -  ``minimum``: number. The minimum value for this axis in user space.
    MutatorMath + Varlib.
 -  ``maximum``: number. The maximum value for this axis in user space.
