@@ -102,7 +102,8 @@ fea_keywords = set([
     "required", "righttoleft", "reversesub", "rsub",
     "script", "sub", "substitute", "subtable",
     "table",
-    "usemarkfilteringset", "useextension", "valuerecorddef"]
+    "usemarkfilteringset", "useextension", "valuerecorddef",
+    "base", "gdef", "head", "hhea", "name", "vhea", "vmtx"]
 )
 
 
@@ -159,7 +160,7 @@ class GlyphName(Expression):
         return (self.glyph,)
 
     def asFea(self, indent=""):
-        return str(self.glyph)
+        return asFea(self.glyph)
 
 
 class GlyphClass(Expression):
@@ -425,7 +426,7 @@ class MarkClass(object):
         return tuple(self.glyphs.keys())
 
     def asFea(self, indent=""):
-        res = "\n".join(d.asFea(indent=indent) for d in self.definitions)
+        res = "\n".join(d.asFea() for d in self.definitions)
         return res
 
 
@@ -440,8 +441,8 @@ class MarkClassDefinition(Statement):
         return self.glyphs.glyphSet()
 
     def asFea(self, indent=""):
-        return "{}markClass {} {} @{};".format(
-            indent, self.glyphs.asFea(), self.anchor.asFea(),
+        return "markClass {} {} @{};".format(
+            self.glyphs.asFea(), self.anchor.asFea(),
             self.markClass.name)
 
 

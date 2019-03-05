@@ -167,6 +167,7 @@ Lib/fontTools/svgLib/__init__.py
 Lib/fontTools/svgLib/path/__init__.py
 Lib/fontTools/svgLib/path/arc.py
 Lib/fontTools/svgLib/path/parser.py
+Lib/fontTools/svgLib/path/shapes.py
 Lib/fontTools/t1Lib/__init__.py
 Lib/fontTools/ttLib/__init__.py
 Lib/fontTools/ttLib/macUtils.py
@@ -342,6 +343,7 @@ Tests/designspaceLib/designspace_test.py
 Tests/designspaceLib/data/test.designspace
 Tests/encodings/codecs_test.py
 Tests/feaLib/__init__.py
+Tests/feaLib/ast_test.py
 Tests/feaLib/builder_test.py
 Tests/feaLib/error_test.py
 Tests/feaLib/lexer_test.py
@@ -672,9 +674,12 @@ Tests/subset/data/expect_opbd_1.ttx
 Tests/subset/data/expect_prop_0.ttx
 Tests/subset/data/expect_prop_1.ttx
 Tests/subset/data/google_color.ttx
+Tests/subset/data/test_hinted_subrs_CFF.desub.ttx
+Tests/subset/data/test_hinted_subrs_CFF.ttx
 Tests/svgLib/path/__init__.py
 Tests/svgLib/path/parser_test.py
 Tests/svgLib/path/path_test.py
+Tests/svgLib/path/shapes_test.py
 Tests/t1Lib/t1Lib_test.py
 Tests/t1Lib/data/TestT1-Regular.lwfn
 Tests/t1Lib/data/TestT1-Regular.pfa

@@ -607,6 +607,9 @@ class Index(object):
 	def getCompiler(self, strings, parent, isCFF2=None):
 		return self.compilerClass(self, strings, parent, isCFF2=isCFF2)
 
+	def clear(self):
+		del self.items[:]
+
 
 class GlobalSubrsIndex(Index):
 
@@ -2242,6 +2245,12 @@ class BaseDict(object):
 		return self.compilerClass(self, strings, parent, isCFF2=isCFF2)
 
 	def __getattr__(self, name):
+		if name[:2] == name[-2:] == "__":
+			# to make deepcopy() and pickle.load() work, we need to signal with
+			# AttributeError that dunder methods like '__deepcopy__' or '__getstate__'
+			# aren't implemented. For more details, see:
+			# https://github.com/fonttools/fonttools/pull/1488
+			raise AttributeError(name)
 		value = self.rawDict.get(name, None)
 		if value is None:
 			value = self.defaults.get(name)
@@ -2426,11 +2435,9 @@ class PrivateDict(BaseDict):
 			self.defaults = buildDefaults(privateDictOperators)
 			self.order = buildOrder(privateDictOperators)
 
-	def __getattr__(self, name):
-		if name == "in_cff2":
-			return self._isCFF2
-		value = BaseDict.__getattr__(self, name)
-		return value
+	@property
+	def in_cff2(self):
+		return self._isCFF2
 
 	def getNumRegions(self, vi=None):  # called from misc/psCharStrings.py
 		# if getNumRegions is being called, we can assume that VarStore exists.
