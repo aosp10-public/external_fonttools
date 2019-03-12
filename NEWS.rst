@@ -1,3 +1,43 @@
+3.38.0 (released 2019-02-18)
+----------------------------
+
+- [cffLib] Fixed RecursionError when unpickling or deepcopying TTFont with
+  CFF table (#1488, 649dc49).
+- [subset] Fixed AttributeError when using --desubroutinize option (#1490).
+  Also, fixed desubroutinizing bug when subrs contain hints (#1499).
+- [CPAL] Make Color a subclass of namedtuple (173a0f5).
+- [feaLib] Allow hyphen in glyph class names.
+- [feaLib] Added 'tables' option to __main__.py (#1497).
+- [feaLib] Add support for special-case contextual positioning formatting
+  (#1501).
+- [svgLib] Support converting SVG basic shapes (rect, circle, etc.) into
+  equivalent SVG paths (#1500, #1508).
+- [Snippets] Added name-viewer.ipynb Jupyter notebook.
+
+
+3.37.3 (released 2019-02-05)
+----------------------------
+
+- The previous release accidentally changed several files from Unix to DOS
+  line-endings. Fix that.
+
+3.37.2 (released 2019-02-05)
+----------------------------
+
+- [varLib] Temporarily revert the fix to ``load_masters()``, which caused a
+  crash in ``interpolate_layout()`` when ``deepcopy``-ing OTFs.
+
+3.37.1 (released 2019-02-05)
+----------------------------
+
+- [varLib] ``load_masters()`` now actually assigns the fonts it loads to the
+  source.font attributes.
+- [varLib] Fixed an MVAR table generation crash when sparse masters were
+  involved.
+- [voltLib] ``parse_coverage_()`` returns a tuple instead of an ast.Enum.
+- [feaLib] A MarkClassDefinition inside a block is no longer doubly indented
+  compared to the rest of the block.
+
 3.37.0 (released 2019-01-28)
 ----------------------------
 
