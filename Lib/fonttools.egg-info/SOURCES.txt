@@ -29,7 +29,6 @@ Doc/source/conf.py
 Doc/source/encodings.rst
 Doc/source/feaLib.rst
 Doc/source/index.rst
-Doc/source/inspect.rst
 Doc/source/merge.rst
 Doc/source/subset.rst
 Doc/source/t1Lib.rst
@@ -88,7 +87,6 @@ Lib/fontTools/__main__.py
 Lib/fontTools/afmLib.py
 Lib/fontTools/agl.py
 Lib/fontTools/fontBuilder.py
-Lib/fontTools/inspect.py
 Lib/fontTools/merge.py
 Lib/fontTools/ttx.py
 Lib/fontTools/unicode.py
@@ -348,8 +346,14 @@ Tests/feaLib/builder_test.py
 Tests/feaLib/error_test.py
 Tests/feaLib/lexer_test.py
 Tests/feaLib/parser_test.py
+Tests/feaLib/data/AlternateSubtable.fea
+Tests/feaLib/data/AlternateSubtable.ttx
 Tests/feaLib/data/Attach.fea
 Tests/feaLib/data/Attach.ttx
+Tests/feaLib/data/ChainPosSubtable.fea
+Tests/feaLib/data/ChainPosSubtable.ttx
+Tests/feaLib/data/ChainSubstSubtable.fea
+Tests/feaLib/data/ChainSubstSubtable.ttx
 Tests/feaLib/data/GPOS_1.fea
 Tests/feaLib/data/GPOS_1.ttx
 Tests/feaLib/data/GPOS_1_zero.fea
@@ -382,8 +386,14 @@ Tests/feaLib/data/LigatureCaretByIndex.fea
 Tests/feaLib/data/LigatureCaretByIndex.ttx
 Tests/feaLib/data/LigatureCaretByPos.fea
 Tests/feaLib/data/LigatureCaretByPos.ttx
+Tests/feaLib/data/LigatureSubtable.fea
+Tests/feaLib/data/LigatureSubtable.ttx
+Tests/feaLib/data/MultipleSubstSubtable.fea
+Tests/feaLib/data/MultipleSubstSubtable.ttx
 Tests/feaLib/data/PairPosSubtable.fea
 Tests/feaLib/data/PairPosSubtable.ttx
+Tests/feaLib/data/SingleSubstSubtable.fea
+Tests/feaLib/data/SingleSubstSubtable.ttx
 Tests/feaLib/data/ZeroValue_ChainSinglePos_horizontal.fea
 Tests/feaLib/data/ZeroValue_ChainSinglePos_horizontal.ttx
 Tests/feaLib/data/ZeroValue_ChainSinglePos_vertical.fea

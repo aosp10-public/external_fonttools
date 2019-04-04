@@ -208,7 +208,7 @@ Font table options:
       By default, the following tables are dropped:
       'BASE', 'JSTF', 'DSIG', 'EBDT', 'EBLC', 'EBSC', 'SVG ', 'PCLT', 'LTSH'
       and Graphite tables: 'Feat', 'Glat', 'Gloc', 'Silf', 'Sill'
-      and color tables: 'CBLC', 'CBDT', 'sbix'.
+      and color tables: 'sbix'.
       The tool will attempt to subset the remaining tables.
       Examples:
         --drop-tables-='SVG '
@@ -266,7 +266,7 @@ Font naming options:
   --name-legacy
       Keep legacy (non-Unicode) 'name' table entries (0.x, 1.x etc.).
       XXX Note: This might be needed for some fonts that have no Unicode name
-      entires for English. See: https://github.com/behdad/fonttools/issues/146
+      entires for English. See: https://github.com/fonttools/fonttools/issues/146
   --no-name-legacy
       Drop legacy (non-Unicode) 'name' table entries [default]
   --name-languages[+|-]=<langID>[,<langID>]
@@ -1377,7 +1377,7 @@ def subset_glyphs(self, s):
 
 	return True
 
-# CBDC will inherit it
+# CBDT will inherit it
 @_add_method(ttLib.getTableClass('EBDT'))
 def subset_glyphs(self, s):
   self.strikeData = [{g: strike[g] for g in s.glyphs if g in strike}
@@ -1425,7 +1425,7 @@ def subset_glyphs(self, s):
 @_add_method(ttLib.getTableClass('GSUB'),
 	     ttLib.getTableClass('GPOS'))
 def retain_empty_scripts(self):
-	# https://github.com/behdad/fonttools/issues/518
+	# https://github.com/fonttools/fonttools/issues/518
 	# https://bugzilla.mozilla.org/show_bug.cgi?id=1080739#c15
 	return self.__class__ == ttLib.getTableClass('GSUB')
 
@@ -1798,17 +1798,20 @@ def subset_glyphs(self, s):
 	used = set()
 
 	if table.AdvWidthMap:
-		table.AdvWidthMap.mapping = _dict_subset(table.AdvWidthMap.mapping, s.glyphs)
+		if not s.options.retain_gids:
+			table.AdvWidthMap.mapping = _dict_subset(table.AdvWidthMap.mapping, s.glyphs)
 		used.update(table.AdvWidthMap.mapping.values())
 	else:
 		assert table.LsbMap is None and table.RsbMap is None, "File a bug."
 		used.update(s.reverseOrigGlyphMap.values())
 
 	if table.LsbMap:
-		table.LsbMap.mapping = _dict_subset(table.LsbMap.mapping, s.glyphs)
+		if not s.options.retain_gids:
+			table.LsbMap.mapping = _dict_subset(table.LsbMap.mapping, s.glyphs)
 		used.update(table.LsbMap.mapping.values())
 	if table.RsbMap:
-		table.RsbMap.mapping = _dict_subset(table.RsbMap.mapping, s.glyphs)
+		if not s.options.retain_gids:
+			table.RsbMap.mapping = _dict_subset(table.RsbMap.mapping, s.glyphs)
 		used.update(table.RsbMap.mapping.values())
 
 	varidx_map = varStore.VarStore_subset_varidxes(table.VarStore, used)
@@ -1852,9 +1855,9 @@ def subset_glyphs(self, s):
 	if table.TsbMap:
 		table.TsbMap.mapping = {k:varidx_map[v] for k,v in table.TsbMap.mapping.items()}
 	if table.BsbMap:
-		table.RsbMap.mapping = {k:varidx_map[v] for k,v in table.RsbMap.mapping.items()}
+		table.BsbMap.mapping = {k:varidx_map[v] for k,v in table.BsbMap.mapping.items()}
 	if table.VOrgMap:
-		table.RsbMap.mapping = {k:varidx_map[v] for k,v in table.RsbMap.mapping.items()}
+		table.VOrgMap.mapping = {k:varidx_map[v] for k,v in table.VOrgMap.mapping.items()}
 
 	# TODO Return emptiness...
 	return True

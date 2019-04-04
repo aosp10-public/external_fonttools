@@ -1,5 +1,4 @@
-|Travis Build Status| |Appveyor Build status| |Health| |Coverage Status|
-|PyPI| |Gitter Chat|
+|Travis Build Status| |Appveyor Build status| |Coverage Status| |PyPI| |Gitter Chat|
 
 What is this?
 ~~~~~~~~~~~~~
@@ -137,12 +136,10 @@ important, we maintain an ordered list of glyph names in the font.
 Other Tools
 ~~~~~~~~~~~
 
-Commands for inspecting, merging and subsetting fonts are also
-available:
+Commands for merging and subsetting fonts are also available:
 
 .. code:: sh
 
-    pyftinspect
     pyftmerge
     pyftsubset
 
@@ -301,16 +298,6 @@ are required to unlock the extra features named "ufo", etc.
   * `reportlab <https://pypi.python.org/pypi/reportlab>`__: Python toolkit
     for generating PDFs and graphics.
 
-- ``Lib/fontTools/inspect.py``
-
-  A GUI font inspector, requires one of the following packages:
-
-  * `PyGTK <https://pypi.python.org/pypi/PyGTK>`__: Python bindings for
-    GTK  2.x (only works with Python 2).
-  * `PyGObject <https://wiki.gnome.org/action/show/Projects/PyGObject>`__ :
-    Python bindings for GTK 3.x and gobject-introspection libraries (also
-    compatible with Python 3).
-
 Testing
 ~~~~~~~
 
@@ -407,8 +394,6 @@ Have fun!
    :target: https://travis-ci.org/fonttools/fonttools
 .. |Appveyor Build status| image:: https://ci.appveyor.com/api/projects/status/0f7fmee9as744sl7/branch/master?svg=true
    :target: https://ci.appveyor.com/project/fonttools/fonttools/branch/master
-.. |Health| image:: https://landscape.io/github/behdad/fonttools/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/behdad/fonttools/master
 .. |Coverage Status| image:: https://codecov.io/gh/fonttools/fonttools/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/fonttools/fonttools
 .. |PyPI| image:: https://img.shields.io/pypi/v/fonttools.svg

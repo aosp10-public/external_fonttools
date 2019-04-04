@@ -526,6 +526,7 @@ class Parser(object):
             return self.ast.LookupFlagStatement(value, location=location)
 
         # format A: "lookupflag RightToLeft MarkAttachmentType @M;"
+        value_seen = False
         value, markAttachment, markFilteringSet = 0, None, None
         flags = {
             "RightToLeft": 1, "IgnoreBaseGlyphs": 2,
@@ -545,12 +546,18 @@ class Parser(object):
                 self.expect_keyword_("UseMarkFilteringSet")
                 markFilteringSet = self.parse_class_name_()
             elif self.next_token_ in flags:
+                value_seen = True
                 value = value | flags[self.expect_name_()]
             else:
                 raise FeatureLibError(
                     '"%s" is not a recognized lookupflag' % self.next_token_,
                     self.next_token_location_)
         self.expect_symbol_(";")
+
+        if not any([value_seen, markAttachment, markFilteringSet]):
+            raise FeatureLibError(
+                'lookupflag must have a value', self.next_token_location_)
+
         return self.ast.LookupFlagStatement(value,
                                             markAttachment=markAttachment,
                                             markFilteringSet=markFilteringSet,
@@ -755,7 +762,8 @@ class Parser(object):
                 num_lookups == 0):
             return self.ast.MultipleSubstStatement(
                 old_prefix, tuple(old[0].glyphSet())[0], old_suffix,
-                tuple([list(n.glyphSet())[0] for n in new]), location=location)
+                tuple([list(n.glyphSet())[0] for n in new]),
+                forceChain=hasMarks, location=location)
 
         # GSUB lookup type 4: Ligature substitution.
         # Format: "substitute f f i by f_f_i;"
@@ -1442,7 +1450,7 @@ class Parser(object):
             if isinstance(s, self.ast.SingleSubstStatement):
                 has_single = not any([s.prefix, s.suffix, s.forceChain])
             elif isinstance(s, self.ast.MultipleSubstStatement):
-                has_multiple = not any([s.prefix, s.suffix])
+                has_multiple = not any([s.prefix, s.suffix, s.forceChain])
 
         # Upgrade all single substitutions to multiple substitutions.
         if has_single and has_multiple:
@@ -1451,7 +1459,7 @@ class Parser(object):
                     statements[i] = self.ast.MultipleSubstStatement(
                         s.prefix, s.glyphs[0].glyphSet()[0], s.suffix,
                         [r.glyphSet()[0] for r in s.replacements],
-                        location=s.location)
+                        s.forceChain, location=s.location)
 
     def is_cur_keyword_(self, k):
         if self.cur_token_type_ is Lexer.NAME:
