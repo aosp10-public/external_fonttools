@@ -1128,11 +1128,14 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.rules.append(ruleDescriptor)
 
     def newDefaultLocation(self):
+        """Return default location in design space."""
         # Without OrderedDict, output XML would be non-deterministic.
         # https://github.com/LettError/designSpaceDocument/issues/10
         loc = collections.OrderedDict()
         for axisDescriptor in self.axes:
-            loc[axisDescriptor.name] = axisDescriptor.default
+            loc[axisDescriptor.name] = axisDescriptor.map_forward(
+                axisDescriptor.default
+            )
         return loc
 
     def updateFilenameFromPath(self, masters=True, instances=True, force=False):
@@ -1176,43 +1179,43 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         return None
 
     def findDefault(self):
-        # new default finder
-        # take the sourcedescriptor with the location at all the defaults
-        # if we can't find it, return None, let someone else figure it out
+        """Set and return SourceDescriptor at the default location or None.
+
+        The default location is the set of all `default` values in user space
+        of all axes.
+        """
         self.default = None
+
+        # Convert the default location from user space to design space before comparing
+        # it against the SourceDescriptor locations (always in design space).
+        default_location_design = {
+            axis.name: axis.map_forward(self.defaultLoc[axis.name])
+            for axis in self.axes
+        }
+
         for sourceDescriptor in self.sources:
-            if sourceDescriptor.location == self.defaultLoc:
-                # we choose you!
+            if sourceDescriptor.location == default_location_design:
                 self.default = sourceDescriptor
                 return sourceDescriptor
+
         return None
 
     def normalizeLocation(self, location):
-        # adapted from fontTools.varlib.models.normalizeLocation because:
-        #   - this needs to work with axis names, not tags
-        #   - this needs to accomodate anisotropic locations
-        #   - the axes are stored differently here, it's just math
+        from fontTools.varLib.models import normalizeValue
+
         new = {}
         for axis in self.axes:
             if axis.name not in location:
                 # skipping this dimension it seems
                 continue
-            v = location.get(axis.name, axis.default)
-            if type(v) == tuple:
-                v = v[0]
-            if v == axis.default:
-                v = 0.0
-            elif v < axis.default:
-                if axis.default == axis.minimum:
-                    v = 0.0
-                else:
-                    v = (max(v, axis.minimum) - axis.default) / (axis.default - axis.minimum)
-            else:
-                if axis.default == axis.maximum:
-                    v = 0.0
-                else:
-                    v = (min(v, axis.maximum) - axis.default) / (axis.maximum - axis.default)
-            new[axis.name] = v
+            value = location[axis.name]
+            # 'anisotropic' location, take first coord only
+            if isinstance(value, tuple):
+                value = value[0]
+            triple = [
+                axis.map_forward(v) for v in (axis.minimum, axis.default, axis.maximum)
+            ]
+            new[axis.name] = normalizeValue(value, triple)
         return new
 
     def normalize(self):

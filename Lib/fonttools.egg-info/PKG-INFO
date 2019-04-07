@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: fonttools
-Version: 3.38.0
+Version: 3.39.0
 Summary: Tools to manipulate font files
 Home-page: http://github.com/fonttools/fonttools
 Author: Just van Rossum
@@ -8,8 +8,7 @@ Author-email: just@letterror.com
 Maintainer: Behdad Esfahbod
 Maintainer-email: behdad@behdad.org
 License: MIT
-Description: |Travis Build Status| |Appveyor Build status| |Health| |Coverage Status|
-        |PyPI| |Gitter Chat|
+Description: |Travis Build Status| |Appveyor Build status| |Coverage Status| |PyPI| |Gitter Chat|
         
         What is this?
         ~~~~~~~~~~~~~
@@ -147,12 +146,10 @@ Description: |Travis Build Status| |Appveyor Build status| |Health| |Coverage St
         Other Tools
         ~~~~~~~~~~~
         
-        Commands for inspecting, merging and subsetting fonts are also
-        available:
+        Commands for merging and subsetting fonts are also available:
         
         .. code:: sh
         
-            pyftinspect
             pyftmerge
             pyftsubset
         
@@ -311,16 +308,6 @@ Description: |Travis Build Status| |Appveyor Build status| |Health| |Coverage St
           * `reportlab <https://pypi.python.org/pypi/reportlab>`__: Python toolkit
             for generating PDFs and graphics.
         
-        - ``Lib/fontTools/inspect.py``
-        
-          A GUI font inspector, requires one of the following packages:
-        
-          * `PyGTK <https://pypi.python.org/pypi/PyGTK>`__: Python bindings for
-            GTK  2.x (only works with Python 2).
-          * `PyGObject <https://wiki.gnome.org/action/show/Projects/PyGObject>`__ :
-            Python bindings for GTK 3.x and gobject-introspection libraries (also
-            compatible with Python 3).
-        
         Testing
         ~~~~~~~
         
@@ -417,8 +404,6 @@ Description: |Travis Build Status| |Appveyor Build status| |Health| |Coverage St
            :target: https://travis-ci.org/fonttools/fonttools
         .. |Appveyor Build status| image:: https://ci.appveyor.com/api/projects/status/0f7fmee9as744sl7/branch/master?svg=true
            :target: https://ci.appveyor.com/project/fonttools/fonttools/branch/master
-        .. |Health| image:: https://landscape.io/github/behdad/fonttools/master/landscape.svg?style=flat
-           :target: https://landscape.io/github/behdad/fonttools/master
         .. |Coverage Status| image:: https://codecov.io/gh/fonttools/fonttools/branch/master/graph/badge.svg
            :target: https://codecov.io/gh/fonttools/fonttools
         .. |PyPI| image:: https://img.shields.io/pypi/v/fonttools.svg
@@ -429,6 +414,35 @@ Description: |Travis Build Status| |Appveyor Build status| |Health| |Coverage St
         
         Changelog
         ~~~~~~~~~
+        
+        3.39.0 (released 2019-03-19)
+        ----------------------------
+        
+        - [ttLib/glyf] Raise more specific error when encountering recursive
+          component references (#1545, #1546).
+        - [Doc/designspaceLib] Defined new ``public.skipExportGlyphs`` lib key (#1534,
+          unified-font-object/ufo-spec#84).
+        - [varLib] Use ``vmtx`` to compute vertical phantom points; or ``hhea.ascent``
+          and ``head.unitsPerEM`` if ``vmtx`` is missing (#1528).
+        - [gvar/cvar] Sort XML element's min/value/max attributes in TupleVariation
+          toXML to improve readability of TTX dump (#1527).
+        - [varLib.plot] Added support for 2D plots with only 1 variation axis (#1522).
+        - [designspaceLib] Use axes maps when normalizing locations in
+          DesignSpaceDocument (#1226, #1521), and when finding default source (#1535).
+        - [mutator] Set ``OVERLAP_SIMPLE`` and ``OVERLAP_COMPOUND`` glyf flags by
+          default in ``instantiateVariableFont``. Added ``--no-overlap`` cli option
+          to disable this (#1518).
+        - [subset] Fixed subsetting ``VVAR`` table (#1516, #1517).  
+          Fixed subsetting an ``HVAR`` table that has an ``AdvanceWidthMap`` when the
+          option ``--retain-gids`` is used.
+        - [feaLib] Added ``forceChained`` in MultipleSubstStatement (#1511).  
+          Fixed double indentation of ``subtable`` statement (#1512).  
+          Added support for ``subtable`` statement in more places than just PairPos
+          lookups (#1520).  
+          Handle lookupflag 0 and lookupflag without a value (#1540).
+        - [varLib] In ``load_designspace``, provide a default English name for the
+          ``ital`` axis tag.
+        - Remove pyftinspect because it is unmaintained and bitrotted.
         
         3.38.0 (released 2019-02-18)
         ----------------------------
@@ -1670,13 +1684,13 @@ Classifier: Programming Language :: Python :: 3
 Classifier: Topic :: Text Processing :: Fonts
 Classifier: Topic :: Multimedia :: Graphics
 Classifier: Topic :: Multimedia :: Graphics :: Graphics Conversion
-Provides-Extra: woff
-Provides-Extra: type1
-Provides-Extra: interpolatable
 Provides-Extra: symfont
-Provides-Extra: graphite
-Provides-Extra: all
-Provides-Extra: ufo
-Provides-Extra: unicode
+Provides-Extra: type1
 Provides-Extra: lxml
+Provides-Extra: ufo
+Provides-Extra: interpolatable
+Provides-Extra: all
+Provides-Extra: woff
 Provides-Extra: plot
+Provides-Extra: unicode
+Provides-Extra: graphite
